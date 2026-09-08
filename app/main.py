@@ -82,158 +82,12 @@ def _current_user(authorization: str | None = Header(default=None)):
 
 STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 
-# 已逐条核验的拍卖成交基准。只收录拍卖行原始 lot 页面、明确成交价、日期和同一
-# 价格口径；用于纠正搜索摘要把艺术家纪录价或独件作品混入量产/开放版系列的问题。
-VERIFIED_MARKET_REFERENCES = [
-    {
-        "key": "takis_signal_lamp_1968",
-        "artist_terms": ("takis", "vassilakis"),
-        "object_terms": ("signal",),
-        "scope": "Takis 单灯 Signal / Signal Lamp · 开放版 · 约 195–220 cm",
-        "currency": "EUR",
-        "price_basis": "成交价含买家佣金；美元成交按拍卖日 ECB USD/EUR 参考汇率换算",
-        "records": [
-            {
-                "title": "Signal Lamp, Series 1, 1968", "lot": "79040",
-                "sold_at": "2023-10-26", "price": 6562.50, "currency": "USD",
-                "fx_usd_per_eur": 1.054, "auction_house": "Heritage Auctions",
-                "source_name": "Heritage Auctions",
-                "source_url": "https://fineart.ha.com/c/search/results.zx?archive_state=5327&art_category=2792&dept=1544&layout=gallery&mode=archive&sold_status=1526~1524",
-            },
-            {
-                "title": "Signal Lamp, Series 2, 1968", "lot": "63015",
-                "sold_at": "2025-05-15", "price": 9375, "currency": "USD",
-                "fx_usd_per_eur": 1.1185, "auction_house": "Heritage Auctions",
-                "source_name": "Heritage Auctions",
-                "source_url": "https://fineart.ha.com/itm/lighting/vassilakis-takis-signal-lamp-series-2-greece-1968-painted-aluminum-crackle-lacquered-aluminum-chrome-plated/a/8217-63015.s",
-            },
-            {
-                "title": "Signal Lamp, Series 3, 1968", "lot": "63016",
-                "sold_at": "2025-05-15", "price": 9375, "currency": "USD",
-                "fx_usd_per_eur": 1.1185, "auction_house": "Heritage Auctions",
-                "source_name": "Heritage Auctions",
-                "source_url": "https://fineart.ha.com/itm/lighting/vassilakis-takis-signal-lamp-series-3-greece-1968-painted-aluminum-crackle-lacquered-aluminum-chrome-plated/a/8217-63016.s",
-            },
-            {
-                "title": "Signal Lamp, Series 1, 1968", "lot": "63017",
-                "sold_at": "2025-05-15", "price": 6250, "currency": "USD",
-                "fx_usd_per_eur": 1.1185, "auction_house": "Heritage Auctions",
-                "source_name": "Heritage Auctions",
-                "source_url": "https://fineart.ha.com/itm/lighting/vassilakis-takis-signal-lamp-series-1-greece-1968-chrome-plated-steel-enameled-and-powdercoated/a/8217-63017.s",
-            },
-            {
-                "title": "Signal Lamp, Series 1, 1968", "lot": "79059",
-                "sold_at": "2025-10-22", "price": 6250, "currency": "USD",
-                "fx_usd_per_eur": 1.1587, "auction_house": "Heritage Auctions",
-                "source_name": "Heritage Auctions",
-                "source_url": "https://fineart.ha.com/c/search/results.zx?archive_state=5327&art_region_country=1965&dept=1544&layout=gallery&mode=archive&sold_status=1526~1524",
-            },
-            {
-                "title": "Signal Lamp, Series 3, 1968", "lot": "106",
-                "sold_at": "2026-02-26", "price": 12700, "currency": "USD",
-                "fx_usd_per_eur": 1.1814, "auction_house": "Wright",
-                "source_name": "Wright / LiveAuctioneers",
-                "source_url": "https://www.liveauctioneers.com/en-gb/catalog/407028_design/",
-            },
-            {
-                "title": "Signal Lamp, Series 2, 1968", "lot": "123",
-                "sold_at": "2026-02-26", "price": 21590, "currency": "USD",
-                "fx_usd_per_eur": 1.1814, "auction_house": "Wright",
-                "source_name": "Wright / LiveAuctioneers",
-                "source_url": "https://www.liveauctioneers.com/en-gb/catalog/407028_design/",
-            },
-            {
-                "title": "Signal Lamp, Series 1, 1968", "lot": "121",
-                "sold_at": "2026-04-28", "price": 5586, "currency": "USD",
-                "fx_usd_per_eur": 1.168, "auction_house": "Wright",
-                "source_name": "Wright / LiveAuctioneers",
-                "source_url": "https://www.liveauctioneers.com/catalog/414116_design/",
-            },
-            {
-                "title": "Signal, circa 1970", "lot": "187",
-                "sold_at": "2026-05-12", "price": 10496, "currency": "EUR",
-                "auction_house": "Piasa", "source_name": "Piasa",
-                "source_url": "https://www.piasa.fr/en/auctions/contemporary-art-abstraction-figuration",
-            },
-            {
-                "title": "Signal, circa 1970", "lot": "190",
-                "sold_at": "2026-05-12", "price": 10496, "currency": "EUR",
-                "auction_house": "Piasa", "source_name": "Piasa",
-                "source_url": "https://www.piasa.fr/en/auctions/contemporary-art-abstraction-figuration",
-            },
-        ],
-    },
-    {
-        "key": "range_rover_l322",
-        "subject_key": "generic:range-rover-l322",
-        "scope": "Land Rover Range Rover L322 · 2002–2012 · standard road cars",
-        "currency": "GBP",
-        "price_basis": "拍卖方公开 Winning bid / SOLD 成交价；不含普通挂牌、估价或价格指南",
-        "category": "CLASSIC_CAR",
-        "maker": "Land Rover",
-        "series": "Range Rover L322",
-        "records": [
-            {
-                "title": "2003 Range Rover Vogue 4.4 V8 (L322)",
-                "sold_at": "2026-02-04", "price": 6600, "currency": "GBP",
-                "auction_house": "Car & Classic", "source_name": "Car & Classic",
-                "source_url": "https://www.carandclassic.com/auctions/2003-land-rover-range-rover-vogue-44-v8-n0Q1a4",
-            },
-            {
-                "title": "2008 Range Rover 3.6 TDV8 Vogue (L322)",
-                "sold_at": "2026-01-23", "price": 7050, "currency": "GBP",
-                "auction_house": "Car & Classic", "source_name": "Car & Classic",
-                "source_url": "https://www.carandclassic.com/auctions/2008-land-rover-range-rover-36l-tdv8-vogue-8lz1Nn",
-            },
-            {
-                "title": "2012 Range Rover Westminster (L322)",
-                "sold_at": "2026-03-21", "price": 9000, "currency": "GBP",
-                "auction_house": "Iconic Auctioneers", "source_name": "Iconic Auctioneers",
-                "source_url": "https://www.iconicauctioneers.com/images/saturday-buyitnow-sold-prices-21032026.pdf",
-            },
-        ],
-    },
-]
-
-
-def _subject_key(subject_text):
-    """Conservative subject identity: records only aggregate inside one comparable family."""
-    text = (subject_text or "").lower()
-    if ("takis" in text or "vassilakis" in text) and "signal" in text:
-        return "art:takis:signal:single-open-edition"
-    tokens = re.findall(r"[a-z0-9]+", text)
-    stop = {"for", "sale", "sold", "price", "auction", "result", "the", "and"}
-    return "generic:" + "-".join([x for x in tokens if x not in stop][:12])
-
-
-def _seed_verified_market_references():
-    """Import curated evidence into the same generic store used by every category."""
-    from .store import price_record_upsert
-    for ref in VERIFIED_MARKET_REFERENCES:
-        for source_row in ref["records"]:
-            row = dict(source_row)
-            if row["currency"] == "USD":
-                normalized = round(float(row["price"]) / float(row["fx_usd_per_eur"]), 2)
-            elif row["currency"] == "EUR":
-                normalized = round(float(row["price"]), 2)
-            else:
-                # Keep a same-currency auction benchmark auditable instead of
-                # inventing or silently freezing an FX rate. It is surfaced as
-                # a provisional GBP view until sale-date FX is available.
-                normalized = None
-            price_record_upsert({
-                "subject_key": ref.get("subject_key", "art:takis:signal:single-open-edition"),
-                "category": ref.get("category", "ART"),
-                "maker": ref.get("maker", "Takis"), "object_name": row["title"],
-                "series": ref.get("series", "Signal"),
-                "sale_type": "SOLD", "sold_at": row["sold_at"], "price": row["price"],
-                "currency": row["currency"], "normalized_eur": normalized,
-                "fx_rate": row.get("fx_usd_per_eur"), "fx_source": "ECB sale-date reference" if row.get("fx_usd_per_eur") else "",
-                "auction_house": row["auction_house"], "source_name": row["source_name"],
-                "source_url": row["source_url"], "source_tier": 1,
-                "price_basis": "INCLUDING_PREMIUM", "comparable_level": "EXACT_FAMILY",
-                "lot": row.get("lot"), "raw": row,
-            })
+# 人工核验基准已迁移至 app/verified_references.py（0.8.5 起 Analyst 管线共用）
+from .verified_references import (
+    VERIFIED_MARKET_REFERENCES,
+    _seed_verified_market_references,
+    _subject_key,
+)
 
 
 def _price_intelligence(subject_text, candidates=None):
@@ -781,6 +635,7 @@ def health():
     return {
         "status": "ok",
         "app": "SIGNAL / 0.7.2 (A · Liquid Glass)",
+        "version": "0.8.4K",
         "build": "amazing-kimi-0.8.4g-parallels-searxng",
         "llm_configured": provider.configured,
         "llm_provider": provider.provider or None,

@@ -14,7 +14,7 @@ It is built for situations where the interesting opportunity is usually buried a
 
 1. Describe what you are looking for in natural language.
 2. SIGNAL parses that target into deterministic rules.
-3. It plans and executes search-only discovery across a broad market-source directory.
+3. It plans and executes search-only discovery across a broad market-source directory (**126 sources**).
 4. Results are deduplicated, scored, and filtered for actionable availability.
 5. Repeated runs detect changes such as price, status, and relisting events.
 6. Run history records what was planned, completed, failed, and actually observed.

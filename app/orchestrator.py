@@ -438,6 +438,27 @@ def analyze(
                     evidence=(rec.evidence_excerpt or "")[:150],
                 )
 
+    # 2b) 人工核验基准兜底（0.8.5）：离线/手动模式且无任何 SOLD 可比时，
+    #     若命中人工逐条核验的拍卖基准（Takis Signal / Range Rover L322），
+    #     注入定价池——这是系统已验证的证据，不是推测。
+    #     已有 SOLD 可比（无论来自用户输入还是搜索）时绝不覆盖真实证据。
+    if not any(c.sale_type == SALE_SOLD for c in comps):
+        from .verified_references import match_reference
+        injected = match_reference(inp)
+        if injected:
+            comps.extend(injected)
+            for rec in injected:
+                store.add(
+                    claim=f"人工核验基准：{rec.title[:60]}",
+                    value=f"{fmt_money(rec.price, rec.currency)}（{rec.sold_at}，{rec.source_name}，Tier 1）",
+                    source_url=rec.source_url,
+                    source_name=rec.source_name,
+                    evidence=rec.evidence_excerpt,
+                )
+            warnings.append(
+                "已注入人工逐条核验的拍卖成交基准（Takis Signal / Range Rover L322，非搜索获取）"
+            )
+
     cur = (inp.currency or "EUR").upper()
     sold_pool, asking_pool, estimate_pool = [], [], []
     pricing_pool: List[Comparable] = []
