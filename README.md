@@ -114,6 +114,8 @@ LLM_MODEL=
 LLM_BASE_URL=
 ```
 
+**Or configure it in the product UI** (recommended for end users): open **Settings → 大模型（可选）/ LLM (optional)**, pick a provider, paste your API key, and press **保存并测试连接**. The key is stored in a local file (`data/llm_provider_config.json`) and is never displayed or returned by any API. Environment variables remain the deployment-level fallback, so both paths work together.
+
 For Ollama, no API key is required:
 
 ```env

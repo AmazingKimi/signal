@@ -182,7 +182,7 @@
   "settings.apiKey": "API Key",
   "settings.apiKeyPlaceholder": "输入 API Key（不会回显）",
   "settings.saveAndTest": "保存并测试",
-  "settings.testing": "正在测试…",
+  "settings.testing": "测试中…",
   "settings.searchChecking": "正在检查搜索服务…",
   "settings.searchDisconnected": "未连接 · 配置 Tavily 或 Brave 后即可开始巡视。",
   "settings.searchConnected": "已连接 · {provider}",
@@ -200,5 +200,18 @@
   "provider.localTest.title": "搜索服务 · 本地测试模式已启用",
   "provider.localTest.body": "使用本机 SearXNG 公开搜索结果；不会自动访问结果目标网站。",
   "settings.localTestUnavailable": "本地搜索服务暂不可用",
-  "settings.localTestUnavailableNote": "其他功能仍可使用；下次启动会自动重新检查本地搜索服务。"
+  "settings.localTestUnavailableNote": "其他功能仍可使用；下次启动会自动重新检查本地搜索服务。",
+  "settings.llmNote": "选填：填写后由你自带 Key 调用大模型做语义理解、翻译与研究；留空则使用内置确定性规则模式。",
+  "settings.llmProvider": "模型服务商",
+  "settings.llmChecking": "正在读取模型配置…",
+  "settings.llmApiKey": "API Key（只会保存在本机，不会显示或返回）",
+  "settings.llmBaseUrl": "Base URL（可留空，使用默认地址）",
+  "settings.llmModel": "模型名（可留空，使用默认模型）",
+  "settings.saveAndTestLLM": "保存并测试连接",
+  "settings.llmConnected": "已连接 · {provider}",
+  "settings.llmDisconnected": "未配置大模型，使用内置规则模式",
+  "settings.llmTestOk": "连接成功，配置已保存",
+  "settings.llmTestFailed": "上次连接测试失败，请检查配置",
+  "settings.llmError": "模型配置读取失败",
+  "settings.keyStored": "已保存 Key，如需更换请直接输入新 Key"
 }

@@ -200,5 +200,18 @@
   "provider.localTest.title": "Search Service · Local Test Mode Enabled",
   "provider.localTest.body": "Uses the local SearXNG public search service and never automatically visits result destinations.",
   "settings.localTestUnavailable": "Local search service temporarily unavailable",
-  "settings.localTestUnavailableNote": "Other features remain available. The next launch automatically checks local search again."
+  "settings.localTestUnavailableNote": "Other features remain available. The next launch automatically checks local search again.",
+  "settings.llmNote": "Optional: bring your own API key for semantic understanding, translation and research. Leave empty to use the built-in deterministic rule mode.",
+  "settings.llmProvider": "LLM Provider",
+  "settings.llmChecking": "Loading model config…",
+  "settings.llmApiKey": "API Key (stored locally only, never displayed)",
+  "settings.llmBaseUrl": "Base URL (optional, defaults apply)",
+  "settings.llmModel": "Model (optional, defaults apply)",
+  "settings.saveAndTestLLM": "Save & Test Connection",
+  "settings.llmConnected": "Connected · {provider}",
+  "settings.llmDisconnected": "No LLM configured, using rule mode",
+  "settings.llmTestOk": "Connection OK, config saved",
+  "settings.llmTestFailed": "Last test failed, check your config",
+  "settings.llmError": "Failed to load model config",
+  "settings.keyStored": "Key stored; enter a new key to replace it"
 }

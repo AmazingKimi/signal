@@ -22,7 +22,8 @@ from fastapi import FastAPI, HTTPException, Query, Header, Request
 from fastapi.responses import FileResponse, StreamingResponse
 
 from .backtest import run_backtest
-from .llm import build_provider
+from .llm import (build_provider, llm_provider_settings, record_llm_provider_test,
+                  save_llm_provider)
 from .models import AnalysisInput
 from .orchestrator import analyze
 from .research import (build_search_provider, record_search_provider_test,
@@ -974,6 +975,45 @@ def api_settings_search_provider_test(payload: dict | None = None):
         }
         raise HTTPException(400, {"code":code, "message":messages.get(code, "服务暂不可用")})
     state = record_search_provider_test("OK")
+    return {**state, "test_status":"OK"}
+
+
+@app.get("/api/settings/llm")
+def api_settings_llm():
+    """Return LLM provider state only; API keys are never serialized."""
+    return llm_provider_settings()
+
+
+@app.post("/api/settings/llm")
+def api_settings_llm_save(payload: dict):
+    try:
+        return save_llm_provider(str(payload.get("provider") or ""),
+                                 str(payload.get("api_key") or ""),
+                                 str(payload.get("base_url") or ""),
+                                 str(payload.get("model") or ""))
+    except ValueError as exc:
+        code = str(exc)
+        message = "请选择受支持的模型服务商" if code == "INVALID_PROVIDER" else "请输入 API Key"
+        raise HTTPException(400, {"code": code, "message": message})
+
+
+@app.post("/api/settings/llm/test")
+def api_settings_llm_test(payload: dict | None = None):
+    """Persist the selected provider/key and make one real minimal LLM call."""
+    payload = payload or {}
+    if payload.get("provider") or payload.get("api_key") or payload.get("base_url") or payload.get("model"):
+        api_settings_llm_save(payload)
+    provider = build_provider()
+    if not provider.configured:
+        raise HTTPException(409, {"code":"LLM_NOT_CONFIGURED", "message":"请先配置模型服务商与 API Key"})
+    result = provider.chat(
+        [{"role":"user","content":"Reply with exactly: OK"}],
+        temperature=0.0, timeout=25, max_retries=1,
+    )
+    if result is None:
+        record_llm_provider_test("FAILED", "LLM_CALL_FAILED")
+        raise HTTPException(400, {"code":"LLM_CALL_FAILED", "message":"模型调用失败，请检查 Key、Base URL 与网络"})
+    state = record_llm_provider_test("OK")
     return {**state, "test_status":"OK"}
 
 

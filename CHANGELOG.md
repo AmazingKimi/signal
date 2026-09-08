@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.7 — 2026-09-08
+
+- LLM provider configuration is now available in the **Settings screen** (BYOK for end users): pick DeepSeek / OpenAI / Anthropic / Gemini / OpenRouter / Ollama / Custom, paste your own API key, and test the connection before saving.
+- Keys are persisted locally (`data/llm_provider_config.json`) and are never serialized back to any API response; environment variables remain the deployment-level fallback.
+- New endpoints: `GET/POST /api/settings/llm`, `POST /api/settings/llm/test`.
+
 ## 0.8.4I — 2026-09-01
 
 - Added structured natural-language target parsing for art, furniture, and classic cars.

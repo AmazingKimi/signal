@@ -1,8 +1,9 @@
 """SIGNAL LLM layer with local BYOK provider selection.
 
 LLMs only understand, extract, classify and explain evidence. Pricing remains
-fully deterministic elsewhere in SIGNAL. No API key is bundled with the repo;
-keys come from the user's local environment only.
+fully deterministic elsewhere in SIGNAL. No API key is bundled with the repo.
+Keys are configured by each user in the public Settings screen (persisted to a
+local JSON file), with environment variables as the deployment fallback.
 """
 import asyncio
 import hashlib
@@ -11,6 +12,7 @@ import logging
 import os
 import re
 import time
+from pathlib import Path
 from typing import List, Optional
 
 from .llm_transport import (
@@ -21,7 +23,7 @@ from .llm_transport import (
     provider_requires_key,
     sync_request,
 )
-from .models import AnalysisInput
+from .models import AnalysisInput, now_iso
 
 logger = logging.getLogger("kimi.llm")
 
@@ -46,6 +48,81 @@ evidence_excerpt 必须是页面原文。返回严格 JSON，顶层字段为 rec
 # Legacy display-only estimate retained for backward compatibility with existing reports.
 _COST_INPUT_PER_M = 2.0
 _COST_OUTPUT_PER_M = 8.0
+
+# ---- LLM provider settings persistence (public Settings screen) ----
+# Mirrors the search-provider pattern: per-user config in a local JSON file,
+# environment variables remain the deployment-level fallback. API keys are
+# never serialized back to any API response.
+
+LLM_CONFIG_PATH = Path(
+    os.getenv("SIGNAL_LLM_CONFIG_PATH")
+    or (Path(__file__).resolve().parent.parent / "data" / "llm_provider_config.json")
+)
+ALLOWED_LLM_PROVIDERS = {"deepseek", "openai", "anthropic", "gemini", "openrouter", "ollama", "custom"}
+
+
+def _load_llm_config() -> dict:
+    try:
+        if LLM_CONFIG_PATH.exists():
+            return json.loads(LLM_CONFIG_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        logger.warning("LLM config unreadable: %s", LLM_CONFIG_PATH)
+    return {}
+
+
+def _write_llm_config(cfg: dict) -> None:
+    LLM_CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
+    LLM_CONFIG_PATH.write_text(json.dumps(cfg, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def llm_provider_settings() -> dict:
+    """Return provider state only; the API key is never serialized."""
+    cfg = _load_llm_config()
+    provider = normalize_provider(str(cfg.get("provider") or os.getenv("LLM_PROVIDER") or "deepseek"))
+    base_url = str(cfg.get("base_url") or "")
+    model = str(cfg.get("model") or "")
+    api_key = str(cfg.get("api_key") or os.getenv("LLM_API_KEY") or "")
+    defaults = PROVIDER_DEFAULTS.get(provider, PROVIDER_DEFAULTS["custom"])
+    key_ok = bool(api_key) or not provider_requires_key(provider)
+    configured = bool((base_url or defaults.get("base_url")) and (model or defaults.get("model")) and key_ok)
+    return {
+        "provider": provider,
+        "configured": configured,
+        "key_present": bool(api_key),
+        "base_url": base_url,
+        "model": model,
+        "last_tested_at": cfg.get("last_tested_at"),
+        "last_test_status": cfg.get("last_test_status"),
+        "last_error_code": cfg.get("last_error_code"),
+    }
+
+
+def save_llm_provider(provider: str, api_key: str, base_url: str = "", model: str = "") -> dict:
+    provider = normalize_provider((provider or "").strip())
+    if provider not in ALLOWED_LLM_PROVIDERS:
+        raise ValueError("INVALID_PROVIDER")
+    cfg = _load_llm_config()
+    if api_key:
+        cfg["api_key"] = api_key.strip()
+    existing = str(cfg.get("api_key") or os.getenv("LLM_API_KEY") or "")
+    if not existing and provider_requires_key(provider):
+        raise ValueError("API_KEY_REQUIRED")
+    cfg["provider"] = provider
+    if base_url:
+        cfg["base_url"] = base_url.strip().rstrip("/")
+    if model:
+        cfg["model"] = model.strip()
+    cfg.update({"last_tested_at": None, "last_test_status": None, "last_error_code": None})
+    _write_llm_config(cfg)
+    return llm_provider_settings()
+
+
+def record_llm_provider_test(status: str, error_code: str | None = None) -> dict:
+    cfg = _load_llm_config()
+    cfg.update({"last_tested_at": now_iso(), "last_test_status": status,
+                "last_error_code": error_code})
+    _write_llm_config(cfg)
+    return llm_provider_settings()
 
 
 class LLMUsage:
@@ -90,11 +167,22 @@ class LLMProvider:
         model: Optional[str] = None,
         provider: Optional[str] = None,
     ):
-        self.provider = normalize_provider(provider or os.getenv("LLM_PROVIDER") or "deepseek")
+        cfg = _load_llm_config()
+        cfg_provider = str(cfg.get("provider") or "").strip()
+        cfg_base_url = str(cfg.get("base_url") or "").strip()
+        cfg_api_key = str(cfg.get("api_key") or "").strip()
+        cfg_model = str(cfg.get("model") or "").strip()
+        self.provider = normalize_provider(
+            provider or cfg_provider or os.getenv("LLM_PROVIDER") or "deepseek"
+        )
         defaults = PROVIDER_DEFAULTS.get(self.provider, PROVIDER_DEFAULTS["custom"])
-        self.base_url = (base_url or os.getenv("LLM_BASE_URL") or defaults.get("base_url") or "").rstrip("/")
-        self.api_key = api_key or os.getenv("LLM_API_KEY") or ""
-        self.model = model or os.getenv("LLM_MODEL") or defaults.get("model") or ""
+        self.base_url = (
+            base_url or cfg_base_url or os.getenv("LLM_BASE_URL") or defaults.get("base_url") or ""
+        ).rstrip("/")
+        self.api_key = api_key or cfg_api_key or os.getenv("LLM_API_KEY") or ""
+        self.model = (
+            model or cfg_model or os.getenv("LLM_MODEL") or defaults.get("model") or ""
+        )
         key_ok = bool(self.api_key) or not provider_requires_key(self.provider)
         self.configured = bool(self.model and self.base_url and key_ok)
         self.usage = LLMUsage()
