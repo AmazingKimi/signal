@@ -1,0 +1,35 @@
+/* ================================================================
+ * SIGNAL · 0.7.2 — A · Liquid Glass (visionOS) · responsive
+ * 与 app/static/index.html 内联母版同步。类名与 0.7.2 完全一致。
+ * ================================================================ */
+
+/* ---- 响应式 ---- */
+@media (max-width:720px){
+  .page{padding:24px 16px 90px}
+  .hero{align-items:flex-start;flex-direction:column}
+  .agentstrip{grid-template-columns:1fr}
+  .opp-grid,.brief-grid,.team-grid,.risk-list{grid-template-columns:1fr}
+  .brief-nums{grid-template-columns:repeat(2,1fr)}
+  .form-grid{grid-template-columns:1fr 1fr}
+  .form-grid .wide{grid-column:span 1}
+  .mk-nav{top:10px;padding:7px 10px;gap:8px;width:calc(100% - 24px)}
+  .mk-brand b{font-size:13px}
+  .mk-brand span{display:none}
+  .mk-navlinks{padding:2px}
+  .mk-navlinks button{padding:6px 11px;font-size:12px}
+  .mk-navlinks button small{display:none!important}
+  .mk-ctl button{padding:4px 8px;font-size:11px}
+  .decision{padding:24px 18px}
+  .decision .d-main{font-size:36px}
+  .decision .d-nums{margin:20px -18px 0}
+  .opp-media{height:150px}
+  .tablewrap{margin:0 -8px;padding:0 8px}
+}
+@media (max-width:420px){
+  .form-grid{grid-template-columns:1fr}
+  .mk-ctl .ico{width:28px;height:28px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))){
+  .glass,.mk-nav,.modal .mcard{background:var(--bg-soft)}
+}

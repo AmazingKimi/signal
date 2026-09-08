@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Python 3.11 · ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Compile application
+        run: python -m compileall -q app
+
+      - name: Import application
+        env:
+          APP_ENV: test
+          LLM_API_KEY: ""
+          TAVILY_API_KEY: ""
+          BRAVE_API_KEY: ""
+          SEARXNG_BASE_URL: ""
+          SEARXNG_FALLBACK_URL: ""
+        run: python -c "from app.main import app; assert app.title"
+
+      - name: Run test suite
+        env:
+          APP_ENV: test
+          LLM_API_KEY: ""
+          TAVILY_API_KEY: ""
+          BRAVE_API_KEY: ""
+          SEARXNG_BASE_URL: ""
+          SEARXNG_FALLBACK_URL: ""
+        run: python -m pytest -q
+
+  public-safety:
+    name: Public repository safety
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Reject common committed secret formats
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -RInE \
+            --exclude-dir=.git \
+            --exclude='.env.example' \
+            --exclude='*.md' \
+            '(github_pat_[A-Za-z0-9_]{20,}|ghp_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9_-]{24,}|-----BEGIN (RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----)' \
+            .; then
+            echo 'Potential committed secret detected.'
+            exit 1
+          fi
+
+      - name: Ensure private runtime files are ignored
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fxq '.env' .gitignore
+          grep -Fxq 'data/' .gitignore
+          grep -Fxq '.venv/' .gitignore

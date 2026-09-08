@@ -1,0 +1,1978 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIGNAL — Private Discovery Radar · 0.7.2</title>
+<link rel="stylesheet" href="/static/css/tokens.css">
+<link rel="stylesheet" href="/static/css/liquid-glass.css">
+<style>
+/* ================================================================
+   SIGNAL · 0.7.2 — A · Liquid Glass (visionOS vision)
+   母版升级：prototype-liquid-glass.html 视觉系统整体接入。
+   五级圆角 10/14/22/28/36 · blur 28/40 · saturate 2.2 · ambient 渐变背景
+   · 双层 inset 高光 · 胶囊导航 · 渐变 Logo · tabular-nums。
+   类名 / HTML 结构 / JS 功能与 0.7.2 完全一致，仅视觉升级。
+   ================================================================ */
+:root{
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","SF Pro","PingFang SC","Helvetica Neue","Microsoft YaHei",sans-serif;
+  --font-mono:"SF Mono",ui-monospace,"JetBrains Mono",Menlo,monospace;
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --ease-out:cubic-bezier(.16,1,.3,1);
+  --ease-soft:cubic-bezier(.4,0,.2,1);
+  --ak-blue:#0a84ff;
+}
+[data-theme="light"]{
+  --bg:#eceef3;--bg-soft:#e1e3ea;
+  --bg-grad-1:#e9edf5;--bg-grad-2:#f3f4f8;--bg-grad-3:#dde1ec;
+  --ink:#0b0b0f;--ink-2:#3a3a40;--mut:#6e6e76;--mut-2:#98989f;
+  --line:rgba(11,11,15,.07);--line-strong:rgba(11,11,15,.12);
+  --glass:rgba(255,255,255,.55);--glass-2:rgba(255,255,255,.38);--glass-3:rgba(255,255,255,.72);
+  --glass-deep:rgba(245,247,252,.85);
+  --glass-brd:rgba(255,255,255,.85);--glass-brd-soft:rgba(255,255,255,.5);
+  --glass-hl:inset 0 1px 0 rgba(255,255,255,.9),inset 0 0 0 .5px rgba(255,255,255,.4);
+  --glass-hl-soft:inset 0 1px 0 rgba(255,255,255,.6);
+  --blur:28px;--blur-strong:40px;--blur-soft:18px;
+  --radius-xs:10px;--radius-sm:14px;--radius:22px;--radius-lg:28px;--radius-xl:36px;
+  --accent:#0a84ff;--accent-ink:#007aff;--accent-soft:rgba(10,132,255,.12);
+  --accent-grad:linear-gradient(135deg,#4ca6ff 0%,#0a84ff 100%);
+  --ambient-1:rgba(120,170,255,.35);--ambient-2:rgba(180,140,255,.22);--ambient-3:rgba(140,210,255,.18);
+  --shadow-sm:0 2px 8px rgba(11,11,15,.05),0 8px 24px rgba(11,11,15,.05);
+  --shadow-md:0 4px 14px rgba(11,11,15,.08),0 24px 56px rgba(11,11,15,.1);
+  --shadow-lg:0 12px 36px rgba(11,11,15,.1),0 48px 100px rgba(11,11,15,.14);
+  --green:#1f9d4f;--green-bg:rgba(31,157,79,.12);
+  --amber:#c08400;--amber-bg:rgba(192,132,0,.14);
+  --red:#d6342a;--red-bg:rgba(214,52,42,.12);
+  --gray:#86868b;--gray-bg:rgba(134,134,139,.14);
+}
+[data-theme="dark"]{
+  --bg:#07080b;--bg-soft:#0d0e12;
+  --bg-grad-1:#0a0c10;--bg-grad-2:#111317;--bg-grad-3:#080a0e;
+  --ink:#f5f5f7;--ink-2:#d1d1d6;--mut:#8e8e93;--mut-2:#5c5c62;
+  --line:rgba(245,245,247,.08);--line-strong:rgba(245,245,247,.18);
+  --glass:rgba(28,30,38,.55);--glass-2:rgba(28,30,38,.36);--glass-3:rgba(28,30,38,.78);
+  --glass-deep:rgba(20,22,28,.92);
+  --glass-brd:rgba(245,245,247,.18);--glass-brd-soft:rgba(245,245,247,.08);
+  --glass-hl:inset 0 1px 0 rgba(245,245,247,.15),inset 0 0 0 .5px rgba(245,245,247,.05);
+  --glass-hl-soft:inset 0 1px 0 rgba(245,245,247,.1);
+  --blur:28px;--blur-strong:40px;--blur-soft:18px;
+  --radius-xs:10px;--radius-sm:14px;--radius:22px;--radius-lg:28px;--radius-xl:36px;
+  --accent:#0a84ff;--accent-ink:#5eb1ff;--accent-soft:rgba(10,132,255,.18);
+  --accent-grad:linear-gradient(135deg,#4ca6ff 0%,#0a84ff 100%);
+  --ambient-1:rgba(10,132,255,.16);--ambient-2:rgba(80,60,200,.14);--ambient-3:rgba(20,160,255,.1);
+  --shadow-sm:0 2px 8px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
+  --shadow-md:0 4px 14px rgba(0,0,0,.45),0 24px 56px rgba(0,0,0,.4);
+  --shadow-lg:0 12px 36px rgba(0,0,0,.55),0 48px 100px rgba(0,0,0,.55);
+  --green:#30d158;--green-bg:rgba(48,209,88,.16);
+  --amber:#ffd60a;--amber-bg:rgba(255,214,10,.18);
+  --red:#ff453a;--red-bg:rgba(255,69,58,.16);
+  --gray:#8e8e93;--gray-bg:rgba(142,142,147,.18);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+body{font-family:var(--font);background:var(--bg);color:var(--ink);transition:background .5s var(--ease-soft),color .3s var(--ease-soft);min-height:100vh;padding-bottom:80px;letter-spacing:-.01em;overflow-x:hidden}
+button{font-family:var(--font);cursor:pointer;border:none;background:none}
+a{text-decoration:none;color:inherit}
+::selection{background:rgba(10,132,255,.25)}
+/* visionOS-style ambient gradient backdrop */
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;transition:background .5s var(--ease-soft);
+  background:
+    radial-gradient(80% 60% at 18% 8%,var(--ambient-1),transparent 60%),
+    radial-gradient(70% 50% at 90% 22%,var(--ambient-2),transparent 60%),
+    radial-gradient(60% 60% at 50% 100%,var(--ambient-3),transparent 60%),
+    linear-gradient(180deg,var(--bg-grad-1),var(--bg-grad-2) 50%,var(--bg-grad-3))}
+.page{display:none;max-width:2280px;width:calc(100% - 64px);margin:0 auto;padding:48px 0 100px;animation:pageIn .5s var(--ease-out)}
+.page.active{display:block}
+@keyframes pageIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+/* ============ 玻璃浮动导航（整条胶囊） ============ */
+.mk-nav{position:sticky;top:14px;z-index:50;margin:0 auto;max-width:2280px;width:calc(100% - 64px);display:flex;align-items:center;gap:22px;padding:14px 18px 14px 22px;background:var(--glass);backdrop-filter:blur(var(--blur)) saturate(2.2);-webkit-backdrop-filter:blur(var(--blur)) saturate(2.2);border:1px solid var(--glass-brd);box-shadow:var(--shadow-sm),var(--glass-hl);border-radius:999px}
+.mk-brand{display:flex;align-items:center;gap:10px;white-space:nowrap}
+.mk-logo{width:42px;height:42px;border-radius:14px;background:#041d55;overflow:hidden;display:block;flex:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 2px 9px rgba(10,76,196,.35)}
+.mk-logo img{display:block;width:100%;height:100%;object-fit:cover;object-position:center;user-select:none;pointer-events:none}
+.mk-brand b{font-size:19px;letter-spacing:.5px;font-weight:700}
+.mk-brand span{font-size:11px;color:var(--mut);letter-spacing:1.5px;display:block}
+.mk-navlinks{display:flex;gap:1px;align-items:center;background:var(--glass-2);border:1px solid var(--glass-brd-soft);border-radius:999px;padding:3px;margin-left:auto;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+.mk-navlinks::-webkit-scrollbar{display:none}
+.mk-navlinks button{padding:10px 20px;border-radius:999px;font-size:15px;color:var(--mut);transition:all .25s var(--ease);white-space:nowrap;display:flex;align-items:center;gap:7px;font-weight:550}
+.mk-navlinks button small{font-size:9px;letter-spacing:1px;opacity:.65;display:none}
+.mk-navlinks button:hover{color:var(--ink)}
+.mk-navlinks button.on{background:var(--ink);color:var(--bg);font-weight:600;box-shadow:0 2px 8px rgba(11,11,15,.22)}
+[data-theme="dark"] .mk-navlinks button.on{background:#f5f5f7;color:#0b0b0e;box-shadow:0 2px 10px rgba(0,0,0,.4)}
+.mk-ctl{display:flex;align-items:center;gap:6px;flex:none}
+.mk-ctl button{padding:5px 11px;border-radius:999px;font-size:11.5px;color:var(--mut);border:1px solid var(--line-strong);background:var(--glass-2);transition:all .2s;letter-spacing:.3px}
+.mk-ctl button:hover{color:var(--ink);border-color:var(--accent)}
+.mk-ctl button.lang-on{background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:600}
+.mk-ctl .ico{width:30px;height:30px;padding:0;display:grid;place-items:center;font-size:13px;border-radius:50%}
+/* ============ 材质 ============ */
+.glass{background:var(--glass);backdrop-filter:blur(var(--blur)) saturate(2.2);-webkit-backdrop-filter:blur(var(--blur)) saturate(2.2);border:1px solid var(--glass-brd);box-shadow:var(--shadow-sm),var(--glass-hl);border-radius:var(--radius)}
+.solid{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--radius-sm)}
+/* ============ 按钮胶囊 ============ */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 22px;border-radius:999px;font-size:13.5px;font-weight:600;letter-spacing:.2px;transition:all .25s var(--ease);white-space:nowrap}
+.btn-p{background:var(--ink);color:var(--bg);box-shadow:var(--shadow-sm)}
+[data-theme="dark"] .btn-p{background:#f5f5f7;color:#0b0b0e}
+.btn-p:hover{transform:translateY(-1px);box-shadow:var(--shadow-md)}
+.btn-g{background:var(--glass);border:1px solid var(--glass-brd);color:var(--ink);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:var(--glass-hl-soft)}
+.btn-g:hover{background:var(--glass-2);transform:translateY(-1px)}
+.btn-accent{background:var(--accent-grad);color:#fff;box-shadow:0 4px 14px rgba(10,132,255,.32)}
+.btn-accent:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(10,132,255,.4)}
+.btn[disabled]{opacity:.45;cursor:not-allowed;transform:none}
+.btn-sm{padding:7px 15px;font-size:12px}
+/* ============ 排版 ============ */
+.h1{font-size:clamp(30px,3.8vw,40px);font-weight:700;letter-spacing:-1.2px;line-height:1.08}
+.h2{font-size:clamp(20px,2.4vw,24px);font-weight:650;letter-spacing:-.4px}
+.h3{font-size:18px;font-weight:600;letter-spacing:-.2px}
+.mut{color:var(--mut)}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.num{font-variant-numeric:tabular-nums;letter-spacing:-.4px}
+/* ============ 状态 ============ */
+.dot{width:8px;height:8px;border-radius:50%;flex:none}
+.dot.green{background:var(--green);box-shadow:0 0 0 3px var(--green-bg)}
+.dot.amber{background:var(--amber);box-shadow:0 0 0 3px var(--amber-bg)}
+.dot.red{background:var(--red);box-shadow:0 0 0 3px var(--red-bg)}
+.dot.gray{background:var(--gray);box-shadow:0 0 0 3px var(--gray-bg)}
+.dot.breath{animation:breath 2.4s ease-in-out infinite}
+@keyframes breath{0%,100%{opacity:1}50%{opacity:.45}}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:.4px}
+.badge.green{background:var(--green-bg);color:var(--green)}
+.badge.amber{background:var(--amber-bg);color:var(--amber)}
+.badge.red{background:var(--red-bg);color:var(--red)}
+.badge.gray{background:var(--gray-bg);color:var(--mut)}
+.badge.gold{background:var(--accent-soft);color:var(--accent-ink)}
+.badge.ghost{border:1px solid var(--line-strong);color:var(--mut)}
+.risk{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.6px}
+.risk i{width:6px;height:6px;border-radius:50%}
+.risk.high i{background:var(--red)} .risk.high{color:var(--red)}
+.risk.med i{background:var(--amber)} .risk.med{color:var(--amber)}
+.risk.low i{background:var(--green)} .risk.low{color:var(--green)}
+/* ============ 页面骨架 ============ */
+.hero{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin:22px 0 36px;flex-wrap:wrap}
+.hero-sub{margin-top:8px;font-size:14px;color:var(--mut);letter-spacing:.3px}
+.agentstrip{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:44px}
+.agent-card{display:flex;align-items:center;gap:14px;padding:20px 24px;border-radius:var(--radius-lg)}
+.agent-card .role{font-size:13px;font-weight:700;letter-spacing:1.5px}
+.agent-card .zh{font-size:11.5px;color:var(--mut);margin-top:2px}
+.agent-card .st{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:11px;color:var(--mut);letter-spacing:.5px}
+.agent-card .st b{font-size:12px;color:var(--ink);font-weight:600}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin:32px 0 16px;flex-wrap:wrap;gap:8px}
+.section-head .h2{display:flex;align-items:center;gap:10px}
+/* ============ Scout Opportunity Card ============ */
+.opp-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.opp-card{overflow:hidden;display:flex;flex-direction:column;border-top:2px solid transparent;border-radius:var(--radius-lg)}
+.opp-card.action{border-top-color:var(--accent)}
+.opp-card.interest{border-top-color:var(--green)}
+.opp-media{height:190px;position:relative;overflow:hidden;background:linear-gradient(150deg,var(--bg-soft),color-mix(in srgb,var(--accent) 12%,var(--bg-soft)))}
+.opp-media .ph{position:absolute;inset:0;display:grid;place-items:center;color:var(--mut-2);font-size:11px;letter-spacing:2px;text-transform:uppercase}
+.opp-media .ph::after{content:"OBJECT IMAGE · 对象图片位";position:absolute;bottom:10px;font-size:9px;letter-spacing:1.5px;opacity:.5}
+.opp-media img{width:100%;height:100%;object-fit:cover;display:block}
+.opp-media .tag-pos{position:absolute;top:12px;left:12px;z-index:2}
+.opp-media .score-pos{position:absolute;bottom:12px;right:12px;z-index:2}
+.opp-body{padding:18px 20px 20px;display:flex;flex-direction:column;gap:10px;flex:1}
+.opp-title{font-size:17px;font-weight:650;letter-spacing:-.2px;line-height:1.3}
+.opp-price{font-size:24px;font-weight:700;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+.opp-price small{font-size:12px;color:var(--mut);font-weight:500;letter-spacing:0;margin-left:6px}
+.opp-why{display:flex;flex-direction:column;gap:6px;padding-top:8px;border-top:1px solid var(--line)}
+.opp-why .lbl{font-size:11px;font-weight:700;letter-spacing:1px;color:var(--mut);list-style:none}
+.opp-why li{font-size:12.5px;color:var(--ink-2);list-style:none;display:flex;gap:8px;align-items:baseline}
+.opp-why li::before{content:"";width:4px;height:4px;border-radius:50%;background:var(--accent);flex:none;align-self:center}
+.opp-actions{display:flex;gap:8px;margin-top:auto;padding-top:14px}
+.score-chip{display:inline-flex;align-items:baseline;gap:4px;background:var(--glass);border:1px solid var(--glass-brd);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:14px;padding:5px 11px;box-shadow:var(--shadow-sm),var(--glass-hl-soft)}
+.score-chip b{font-size:16px;font-weight:700;letter-spacing:-.3px;font-variant-numeric:tabular-nums}
+.score-chip span{font-size:9px;color:var(--mut);letter-spacing:1px}
+/* ============ 空态 ============ */
+.empty{text-align:center;padding:30px 28px;display:flex;flex-direction:column;align-items:center;gap:10px;border-radius:var(--radius-lg)}
+.empty .ring{width:52px;height:52px;border-radius:50%;border:1.5px solid var(--line-strong);display:grid;place-items:center;color:var(--mut-2);margin-bottom:4px;font-size:18px}
+.empty h3{font-size:18px;font-weight:650}
+.empty p{color:var(--mut);font-size:13.5px;line-height:1.65;max-width:560px}
+.empty .funnel{display:flex;gap:16px;margin:12px 0 0;flex-wrap:wrap;justify-content:center}
+.empty .funnel div{text-align:center}
+.empty .funnel b{display:block;font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.4px}
+.empty .funnel span{font-size:10.5px;color:var(--mut);letter-spacing:.5px}
+.empty .funnel .metric-mini{border:0;background:transparent;color:var(--ink);font-family:var(--font);padding:8px 10px;border-radius:12px;cursor:pointer;transition:background .18s,transform .18s}
+.empty .funnel .metric-mini:hover{background:var(--glass);transform:translateY(-2px)}
+.empty .funnel .metric-mini b{display:block;font-size:24px}.empty .funnel .metric-mini span{display:block}
+.empty .btnrow{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;justify-content:center}
+.scout-empty{padding:26px 30px;text-align:left;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:24px}
+.scout-empty .empty-copy{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.scout-empty .empty-kicker{font-size:10.5px;letter-spacing:1.5px;color:var(--accent-ink);font-weight:750}
+.scout-empty h3{font-size:21px;letter-spacing:-.25px}
+.scout-empty p{max-width:680px;margin:0}
+.scout-empty .empty-reason{margin-top:8px;padding:11px 14px;border-radius:14px;background:var(--bg-soft);border:1px solid var(--line);max-width:720px}
+.scout-empty .empty-reason b{display:block;font-size:12px;margin-bottom:3px}.scout-empty .empty-reason span{font-size:12.5px;color:var(--mut);line-height:1.55}
+.scout-empty .funnel{margin:0;display:grid;grid-template-columns:repeat(2,minmax(112px,1fr));gap:8px}
+.scout-empty .funnel .metric-mini{background:var(--glass);border:1px solid var(--line);min-width:112px;text-align:left;padding:12px 14px}
+.scout-empty .funnel .metric-mini b{font-size:22px}.scout-empty .funnel .metric-mini span{font-size:10px;margin-top:2px}
+.market-card{padding:22px 24px;margin-top:18px;border-left:3px solid var(--accent)}
+.market-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
+.market-kicker{font-size:11px;letter-spacing:1.2px;color:var(--accent-ink);font-weight:750}
+.market-scope{font-size:12px;color:var(--mut);margin-top:4px}
+.market-price{font-size:34px;font-weight:780;letter-spacing:-1px;color:var(--accent-ink);margin-top:9px}
+.market-price-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:15px}
+.market-price-box{padding:17px 18px;border-radius:17px;background:var(--bg-soft);border:1px solid var(--line)}
+.market-price-box.latest{background:var(--accent-soft);border-color:rgba(25,139,255,.24)}
+.market-price-label{font-size:11px;color:var(--mut);font-weight:700;letter-spacing:.35px}
+.market-price-box .market-price{margin-top:5px}.market-price-note{font-size:10.5px;color:var(--mut);margin-top:4px;line-height:1.45}
+.market-stats{display:grid;grid-template-columns:repeat(3,minmax(90px,1fr));gap:8px;min-width:340px}
+.market-stat{padding:12px 14px;border-radius:14px;background:var(--bg-soft);border:1px solid var(--line)}
+.market-stat b{display:block;font-size:15px}.market-stat span{font-size:10px;color:var(--mut)}
+.market-method{font-size:11.5px;color:var(--mut);margin-top:12px;line-height:1.55}
+.market-records{margin-top:13px;border-top:1px solid var(--line);padding-top:11px}
+.market-records summary{cursor:pointer;font-size:12px;font-weight:700;color:var(--accent-ink);list-style:none}.market-records summary::-webkit-details-marker{display:none}
+.market-record-list{display:grid;gap:7px;margin-top:10px}
+.market-record{display:grid;grid-template-columns:1fr auto auto auto;gap:14px;align-items:center;padding:10px 12px;border-radius:12px;background:var(--bg-soft);font-size:12px}
+.market-record a{color:var(--ink);font-weight:650}.market-record span{color:var(--mut)}.market-record b{font-size:13px;color:var(--accent-ink)}
+.market-audit{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}.market-audit span{padding:7px 10px;border-radius:999px;background:var(--bg-soft);border:1px solid var(--line);font-size:11px;color:var(--mut)}.market-audit b{color:var(--ink)}
+.market-warning{margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--amber-bg);border:1px solid var(--amber);color:var(--amber);font-size:11.5px;line-height:1.5}
+.buy-card{padding:20px 24px;margin-top:12px}.buy-head{display:flex;align-items:center;justify-content:space-between;gap:16px}.buy-head h3{font-size:16px}.buy-head span{font-size:11px;color:var(--mut)}
+.buy-list{display:grid;gap:8px;margin-top:13px}.buy-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:14px;align-items:center;padding:12px 14px;border-radius:14px;background:var(--bg-soft);border:1px solid var(--line)}.buy-row b{font-size:13px}.buy-row small{display:block;color:var(--mut);font-size:10.5px;margin-top:3px}.buy-row .buy-price{font-size:15px;font-weight:750;color:var(--ink)}
+.buy-empty{margin-top:12px;padding:14px 16px;border-radius:14px;background:var(--bg-soft);border:1px dashed var(--line-strong)}.buy-empty b{display:block;font-size:14px}.buy-empty span{display:block;color:var(--mut);font-size:11.5px;margin-top:4px}
+.comm-card{max-width:680px!important}.comm-card .fld{margin-top:10px}.comm-card textarea{min-height:170px}.comm-note{padding:10px 12px;border-radius:12px;background:var(--accent-soft);color:var(--accent-ink);font-size:12px;line-height:1.5}
+.report-lower{display:grid;gap:14px;margin-top:18px}.report-section{padding:20px 22px}.report-section-title{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}.report-section-title h3{font-size:15px}.report-section-title span{font-size:11px;color:var(--mut)}
+.price-judgment{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.price-judgment div{padding:12px 14px;border-radius:14px;background:var(--bg-soft);border:1px solid var(--line)}.price-judgment b{display:block;font-size:11px;color:var(--mut);margin-bottom:4px}.price-judgment span{font-size:14px;font-weight:650}
+.scout-command{display:flex;align-items:center;gap:10px;padding:12px;margin:0 0 26px;border-radius:22px}
+.scout-command input{height:48px;flex:1;min-width:0;border:1px solid var(--line-strong);border-radius:14px;padding:0 16px;background:var(--glass);color:var(--ink);font:500 14px/1 var(--font);outline:none}
+.scout-command input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.scout-command .btn{height:48px;min-width:132px;border-radius:14px}
+.scout-progress-slot{min-height:0;margin:-14px 12px 22px;padding:0 14px;text-align:center;color:var(--mut);font-size:12px;white-space:pre-line}
+.scout-progress-slot:empty{display:none}.scout-progress-slot .progress-track{margin-top:8px}
+/* ============ Daily Brief ============ */
+.brief{padding:0;overflow:hidden;border-radius:var(--radius-lg)}
+.brief-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--line)}
+.brief-body{padding:18px 22px}
+.brief-nums{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.brief-num{padding:14px 16px;border-radius:var(--radius-sm);text-align:left}
+.brief-num b{display:block;font-size:20px;font-weight:700;letter-spacing:-.4px;font-variant-numeric:tabular-nums}
+.brief-num span{font-size:10.5px;color:var(--mut);letter-spacing:.6px}
+.brief-num.metric{width:100%;font-family:var(--font);color:var(--ink);cursor:pointer;transition:transform .18s,border-color .18s,box-shadow .18s}
+.brief-num.metric:hover{transform:translateY(-2px);border-color:var(--accent);box-shadow:var(--shadow-sm)}
+.brief-num.metric:focus-visible{outline:3px solid var(--accent-soft);border-color:var(--accent)}
+.metric-list{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.metric-row{padding:12px 14px;border-radius:14px;background:var(--bg-soft);border:1px solid var(--line);font-size:13px;line-height:1.55}
+.progress-track{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin-top:12px}.progress-fill{height:100%;background:var(--accent);border-radius:99px;transition:width .35s ease}
+.metric-row b{display:block;color:var(--ink);margin-bottom:2px}.metric-row span{color:var(--mut)}
+.brief-concl{font-size:15px;font-weight:600;margin-bottom:8px}
+.monitor-brief{padding:0;overflow:hidden;border-radius:var(--radius-lg);background:linear-gradient(135deg,var(--glass),color-mix(in srgb,var(--accent) 6%,var(--glass)))}
+.monitor-brief .brief-head{padding:22px 24px;border-bottom:1px solid var(--line);font-size:16px}
+.monitor-brief .brief-head b{font-size:17px}.monitor-brief .brief-head .mut{font-size:12px}
+.monitor-list{display:flex;flex-direction:column}.monitor-row{display:grid;grid-template-columns:110px minmax(0,1fr) auto;gap:16px;align-items:center;padding:15px 24px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.22)}
+.monitor-row:last-child{border-bottom:0}.monitor-row .event{justify-self:start}.monitor-row .item b{display:block;font-size:14px;line-height:1.35}.monitor-row .item small{display:block;margin-top:4px;color:var(--mut);font-size:11px}.monitor-row .value{text-align:right;font-size:14px;font-weight:700;white-space:nowrap}.monitor-row .value a{display:block;margin-top:5px;color:var(--accent-ink);font-size:11px;font-weight:600}
+.nearmiss{display:flex;flex-direction:column;gap:10px}
+.nm-row{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:var(--radius-sm)}
+.nm-row .t{flex:1;min-width:0}
+.nm-row .t b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nm-row .t span{font-size:11px;color:var(--mut)}
+.nm-row .s{font-weight:700;font-size:14px;font-variant-numeric:tabular-nums}
+.brief-adv{margin-top:12px;font-size:12px;color:var(--mut);line-height:1.7}
+.brief-adv b{color:var(--accent-ink)}
+/* ============ Analyst 工作流 ============ */
+.workflow{margin-bottom:26px;padding:18px 22px;border-radius:var(--radius-lg)}
+.wf-head{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;flex-wrap:wrap}
+.wf-head .badge{margin-left:auto}
+.wf-steps{display:flex;align-items:center;gap:0;flex-wrap:wrap;margin-top:10px}
+.wf-step{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--mut);padding:6px 4px}
+.wf-step .n{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--line-strong);display:grid;place-items:center;font-size:10px;font-weight:700;flex:none;transition:all .3s}
+.wf-step.done{color:var(--ink-2)}
+.wf-step.done .n{background:var(--green);border-color:var(--green);color:#fff}
+.wf-step.active{color:var(--ink);font-weight:600}
+.wf-step.active .n{border-color:var(--accent);color:var(--accent)}
+.wf-line{width:26px;height:1px;background:var(--line-strong);flex:none;margin:0 2px}
+.wf-step.active .n{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 var(--accent-soft)}50%{box-shadow:0 0 0 5px var(--accent-soft)}}
+.brief-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;align-items:start}
+/* ============ Decision ============ */
+.decision{text-align:center;padding:36px 28px;border-radius:var(--radius-lg)}
+.decision .d-label{font-size:11px;letter-spacing:2.5px;color:var(--mut);font-weight:700}
+.decision .d-main{font-size:40px;font-weight:750;letter-spacing:-1.5px;margin:6px 0 2px;line-height:1;color:var(--accent-ink)}
+.decision .d-main.buy{color:var(--green)}
+.decision .d-main.watch{color:var(--ink-2)}
+.decision .d-main.pass{color:var(--red)}
+.decision .d-zh{font-size:13px;color:var(--mut);max-width:340px;margin:0 auto}
+.decision .d-nums{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);margin:22px -28px 0;border-top:1px solid var(--line)}
+.decision .d-nums>div{background:var(--glass-2);padding:18px 22px;text-align:left;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.decision .d-nums span{display:block;font-size:10px;color:var(--mut);letter-spacing:.8px;margin-bottom:4px}
+.decision .d-nums b{font-size:17px;font-weight:700;letter-spacing:-.3px;font-variant-numeric:tabular-nums}
+.decision .d-nums .hl b{color:var(--accent-ink)}
+.conf-line{margin:20px 0 6px}
+.conf-track{height:5px;border-radius:99px;background:var(--glass-2);overflow:hidden;margin-top:10px;border:1px solid var(--glass-brd-soft)}
+.conf-track i{display:block;height:100%;border-radius:99px;background:var(--accent-grad);width:0;transition:width 1.2s var(--ease-out);box-shadow:0 0 12px rgba(10,132,255,.4)}
+/* ============ Evidence ============ */
+.ev-card{padding:18px 22px;position:relative;border-radius:var(--radius)}
+.ev-no{position:absolute;top:16px;right:20px;font-size:26px;font-weight:700;color:var(--line-strong);letter-spacing:-1px;font-variant-numeric:tabular-nums;opacity:.7}
+.ev-card .src{font-size:11px;font-weight:700;letter-spacing:1px;color:var(--accent-ink);padding-right:34px}
+.ev-card h4{font-size:14.5px;font-weight:650;margin:5px 0 2px;letter-spacing:-.1px;padding-right:34px}
+.ev-card .meta{font-size:11.5px;color:var(--mut);margin-bottom:10px}
+.ev-card .price{font-size:21px;font-weight:700;letter-spacing:-.4px;font-variant-numeric:tabular-nums}
+.ev-badges{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.ev-x{font-size:12px;color:var(--mut);margin-top:10px;line-height:1.6;display:none}
+.ev-x.open{display:block;animation:pageIn .3s var(--ease)}
+.ev-x a{color:var(--accent-ink);font-size:11.5px;font-weight:600;cursor:pointer}
+.ev-x .orig{font-size:11px;color:var(--mut-2);font-family:var(--font-mono);margin-top:6px;white-space:pre-wrap}
+/* ============ Risk ============ */
+.risk-list{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.risk-row{display:flex;align-items:flex-start;gap:12px;padding:15px 18px;border-radius:var(--radius);border-left:3px solid var(--amber)}
+.risk-row.h{border-left-color:var(--red)}
+.risk-row.m{border-left-color:var(--amber)}
+.risk-row.l{border-left-color:var(--green)}
+.risk-row .txt{font-size:13px;color:var(--ink-2);flex:1;line-height:1.5}
+/* ============ Next Action ============ */
+.next-action{padding:22px 24px;border:1px solid var(--accent);background:var(--accent-soft);border-radius:var(--radius-lg);position:relative;overflow:hidden}
+.next-action::before{content:"";position:absolute;top:-40%;right:-10%;width:60%;height:120%;background:radial-gradient(closest-side,rgba(10,132,255,.16),transparent);pointer-events:none}
+.next-action .t{font-size:11px;letter-spacing:2px;font-weight:700;color:var(--accent-ink);margin-bottom:8px}
+.next-action p{font-size:13.5px;color:var(--ink-2);line-height:1.75;margin-bottom:14px;position:relative}
+.next-action .offer{display:flex;align-items:baseline;gap:10px;margin-bottom:14px;flex-wrap:wrap;position:relative}
+.next-action .offer b{font-size:22px;font-weight:700;letter-spacing:-.4px;font-variant-numeric:tabular-nums;color:var(--accent-ink)}
+/* ============ 初始判断 / 表单 ============ */
+.before{padding:18px 20px;background:var(--glass-2);border:1px dashed var(--line-strong);border-radius:var(--radius)}
+.before .t{font-size:11px;letter-spacing:1.5px;font-weight:700;color:var(--mut);margin-bottom:10px}
+.before .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fld label{display:block;font-size:11px;color:var(--mut);letter-spacing:.5px;margin-bottom:5px}
+.fld input,.fld select,.fld textarea{width:100%;padding:10px 13px;border:1px solid var(--line-strong);border-radius:var(--radius-sm);background:var(--glass);color:var(--ink);font-size:13.5px;font-family:var(--font);outline:none;transition:border-color .2s,box-shadow .2s}
+.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.fld textarea{min-height:70px;resize:vertical}
+.initlock{background:var(--green-bg);border:1px solid var(--green);color:var(--green);font-size:12px;padding:9px 12px;border-radius:999px;margin-top:10px;display:none}
+/* ============ Team ============ */
+.team-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.team-card{padding:30px 28px;display:flex;flex-direction:column;gap:18px;border-radius:var(--radius-lg)}
+.team-card .head{display:block;min-width:0}
+.team-card .role{font-size:20px;font-weight:750;letter-spacing:2px}
+.team-card .zh{font-size:13px;color:var(--mut);margin-top:3px}
+.team-card .zhline{display:flex;align-items:center;gap:8px;min-width:0;flex-wrap:wrap}
+.team-card .zhline .badge{max-width:100%;white-space:nowrap}
+.team-card .quote{font-size:13px;color:var(--ink-2);line-height:1.75;padding-left:14px;border-left:2px solid var(--accent)}
+.team-card .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:auto}
+.team-card .stats .st2{padding:12px 12px;text-align:center;border-radius:var(--radius-xs)}
+.team-card .stats b{display:block;font-size:18px;font-weight:700;letter-spacing:-.3px;font-variant-numeric:tabular-nums}
+.team-card .stats span{font-size:10px;color:var(--mut);letter-spacing:.5px}
+/* ============ Toolbar / 表格 / KPI ============ */
+.toolbar-card{padding:20px 22px;margin-bottom:18px;border-radius:var(--radius)}
+.form-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.form-grid .wide{grid-column:span 2}
+.form-grid label{display:block;font-size:11px;color:var(--mut);letter-spacing:.5px;margin-bottom:5px}
+.form-grid input,.form-grid select{width:100%;padding:10px 13px;border:1px solid var(--line-strong);border-radius:var(--radius-sm);background:var(--glass);color:var(--ink);font-size:13.5px;outline:none;transition:border-color .2s,box-shadow .2s}
+.form-grid input:focus,.form-grid select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{border-bottom:1px solid var(--line);padding:11px 12px;text-align:left;vertical-align:top}
+th{font-weight:650;font-size:11px;letter-spacing:.5px;color:var(--mut);text-transform:uppercase}
+tr:last-child td{border-bottom:none}
+.tablewrap table{background:var(--bg-soft);border-radius:16px;overflow:hidden}
+.watch-table,.history-table{border-collapse:separate;border-spacing:0 10px;background:transparent!important}.watch-table tr,.history-table tr{background:var(--glass);box-shadow:var(--shadow-sm)}.watch-table td,.history-table td{padding:18px 16px;border-top:1px solid var(--glass-brd);border-bottom:1px solid var(--glass-brd)}.watch-table td:first-child,.history-table td:first-child{border-left:1px solid var(--glass-brd);border-radius:18px 0 0 18px}.watch-table td:last-child,.history-table td:last-child{border-right:1px solid var(--glass-brd);border-radius:0 18px 18px 0}.watch-table th,.history-table th{padding:8px 16px;border:0}
+.kpi-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:20px}
+.kpi-card{padding:16px 14px;text-align:center;border-radius:var(--radius)}
+.kpi-card b{display:block;font-size:24px;font-weight:750;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+.kpi-card span{font-size:10.5px;color:var(--mut);letter-spacing:.6px}
+/* ============ 模态 / 分段控件（visionOS 旋钮） ============ */
+.modal{position:fixed;inset:0;background:rgba(20,20,25,.4);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;z-index:100}
+.modal .mcard{background:var(--glass-deep);backdrop-filter:blur(var(--blur-strong)) saturate(1.8);-webkit-backdrop-filter:blur(var(--blur-strong)) saturate(1.8);border:1px solid var(--glass-brd);border-radius:var(--radius-xl);max-width:540px;width:92%;padding:26px;max-height:86vh;overflow:auto;box-shadow:var(--shadow-lg),var(--glass-hl)}
+.modal h2{font-size:14px;letter-spacing:2px;font-weight:700;color:var(--ink);margin-bottom:14px}
+.mk-seg{display:flex;background:var(--glass-2);border:1px solid var(--glass-brd-soft);border-radius:999px;padding:3px;margin-bottom:12px}
+.mk-seg button{padding:7px 16px;border-radius:999px;font-size:12px;color:var(--mut);letter-spacing:.3px;transition:all .2s}
+.mk-seg button.on{background:var(--glass-3);color:var(--ink);font-weight:600;box-shadow:var(--shadow-sm),var(--glass-hl-soft)}
+.onboard-step{margin:14px 0}
+.onboard-step .chkrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.onboard-step .chkrow label{display:flex;align-items:center;gap:6px;border:1px solid var(--line-strong);border-radius:999px;padding:9px 16px;cursor:pointer;font-size:13px;color:var(--ink-2);transition:all .2s;font-weight:500}
+.onboard-step .chkrow label:hover{border-color:var(--accent)}
+.onboard-step .chkrow input{accent-color:var(--accent);width:auto}
+.devbox{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px;font-size:12px;font-family:var(--font-mono);white-space:pre-wrap;color:var(--ink-2)}
+/* ============ Tag / Banner / Misc ============ */
+.tag{display:inline-block;font-size:10.5px;padding:3px 9px;border-radius:999px;margin-right:3px;white-space:nowrap;font-weight:600;letter-spacing:.4px;border:1px solid}
+.tag.v,.tag.h{color:var(--green);border-color:var(--green);background:var(--green-bg)}
+.tag.u,.tag.n,.tag.l{color:var(--mut);border-color:var(--line-strong);background:var(--gray-bg)}
+.tag.c,.tag.m{color:var(--amber);border-color:var(--amber);background:var(--amber-bg)}
+.tag.s.CRITICAL,.tag.s.HIGH{color:var(--red);border-color:var(--red);background:var(--red-bg)}
+.tag.s.MEDIUM{color:var(--amber);border-color:var(--amber);background:var(--amber-bg)}
+.tag.s.LOW{color:var(--green);border-color:var(--green);background:var(--green-bg)}
+.warn{color:var(--red);font-size:12px}
+pre{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px;font-size:12.5px;white-space:pre-wrap;font-family:var(--font-mono);color:var(--ink-2)}
+.kv{font-size:13.5px;line-height:2}
+.kv b{display:inline-block;min-width:170px;font-weight:600;color:var(--ink-2)}
+details.ev{margin-top:6px;border:1px dashed var(--line-strong);border-radius:var(--radius-sm);padding:8px 10px;background:var(--bg-soft)}
+details.ev summary{cursor:pointer;font-size:12px;color:var(--accent-ink);user-select:none;font-weight:600}
+.banner{padding:14px 18px;font-size:14px;font-weight:700;border-radius:var(--radius);margin-bottom:14px;border:1px solid}
+.banner.BUY{background:var(--green-bg);border-color:var(--green);color:var(--green)}
+.banner.NEGOTIATE{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-ink)}
+.banner.WATCH{background:var(--gray-bg);color:var(--mut);border-color:var(--line-strong)}
+.banner.PASS{background:var(--red-bg);color:var(--red);border-color:var(--red)}
+.briefgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;font-size:14px;margin:12px 0}
+.briefgrid b{color:var(--mut);font-weight:600;font-size:11px;display:block;text-transform:uppercase;letter-spacing:.5px}
+.briefgrid .v{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink)}
+#steps{font-family:var(--font-mono);font-size:12px;line-height:1.85;color:var(--ink-2);background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px 18px;margin-bottom:18px;display:none}
+/* ---- 响应式 ---- */
+@media (max-width:720px){
+  .page{padding:24px 16px 90px}
+  .hero{align-items:flex-start;flex-direction:column}
+  .agentstrip{grid-template-columns:1fr}
+  .opp-grid,.brief-grid,.team-grid,.risk-list{grid-template-columns:1fr}
+  .brief-nums{grid-template-columns:repeat(2,1fr)}
+  .form-grid{grid-template-columns:1fr 1fr}
+  .form-grid .wide{grid-column:span 1}
+  .mk-nav{top:10px;padding:7px 10px;gap:8px;width:calc(100% - 24px)}
+  .mk-brand b{font-size:13px}
+  .mk-brand span{display:none}
+  .mk-navlinks{padding:2px}
+  .mk-navlinks button{padding:6px 11px;font-size:12px}
+  .mk-navlinks button small{display:none!important}
+  .mk-ctl button{padding:4px 8px;font-size:11px}
+  .decision{padding:24px 18px}
+  .decision .d-main{font-size:36px}
+  .decision .d-nums{margin:20px -18px 0}
+  .opp-media{height:150px}
+  .tablewrap{margin:0 -8px;padding:0 8px}
+  .scout-empty{grid-template-columns:1fr;padding:22px 18px}.scout-empty .funnel{width:100%}.market-head{flex-direction:column}.market-price-grid{grid-template-columns:1fr}.market-stats{min-width:0;width:100%;grid-template-columns:1fr}.market-record,.buy-row{grid-template-columns:1fr}.price-judgment{grid-template-columns:1fr}
+}
+@media (max-width:420px){
+  .form-grid{grid-template-columns:1fr}
+  .mk-ctl .ico{width:28px;height:28px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))){
+  .glass,.mk-nav,.modal .mcard{background:var(--bg-soft)}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ 玻璃浮动导航（母版单条 sticky） ============ -->
+<nav class="mk-nav" role="navigation">
+  <div class="mk-brand">
+    <div class="mk-logo"><img src="/static/amazing-kimi-logo-centered.png" alt="SIGNAL"></div>
+    <div><b>SIGNAL</b><span>PRIVATE DISCOVERY RADAR</span></div>
+  </div>
+  <div class="mk-navlinks">
+    <button data-page="scout" class="on" type="button"><span data-i18n="nav.scout">侦察</span><small data-i18n="nav.scout.en">SCOUT</small></button>
+    <button data-page="analyst" type="button"><span data-i18n="nav.analyze">分析</span><small data-i18n="nav.analyze.en">ANALYST</small></button>
+    <button data-page="watch" type="button"><span data-i18n="nav.watchlist">监控</span><small data-i18n="nav.watchlist.en">WATCHLIST</small></button>
+    <button data-page="history" type="button"><span data-i18n="nav.history">历史</span><small data-i18n="nav.history.en">HISTORY</small></button>
+    <button data-page="team" type="button"><span data-i18n="nav.team">团队</span><small data-i18n="nav.team.en">TEAM</small></button>
+  </div>
+  <div class="mk-ctl">
+    <button id="langZh" type="button" onclick="setLang('zh-CN')">中文</button>
+    <button id="langEn" type="button" onclick="setLang('en-US')">EN</button>
+    <button class="ico" id="themeBtn" type="button" onclick="toggleTheme()" title="主题">◐</button>
+    <button class="ico" type="button" onclick="openSettings()" title="设置">⚙</button>
+  </div>
+</nav>
+
+<!-- ================= 页面：SCOUT（默认首页） ================= -->
+<section class="page active" id="page-scout">
+  <div class="hero">
+    <div>
+      <h1 class="h1">SIGNAL</h1>
+      <p class="hero-sub" data-i18n="brand.sub">私人发现雷达</p>
+    </div>
+  </div>
+
+  <!-- 三 Agent 状态（玻璃小卡，母版 agentstrip） -->
+  <div class="agentstrip">
+    <div class="glass agent-card"><span class="dot gray" id="dotScout"></span>
+      <div><div class="role">SCOUT</div><div class="zh" id="zhScout">机会侦察员</div></div>
+      <div class="st"><b id="stScout">—</b><span id="detScout">—</span></div>
+    </div>
+    <div class="glass agent-card"><span class="dot gray" id="dotAnalyst"></span>
+      <div><div class="role">ANALYST</div><div class="zh" id="zhAnalyst">机会分析师</div></div>
+      <div class="st"><b id="stAnalyst">—</b><span id="detAnalyst">—</span></div>
+    </div>
+    <div class="glass agent-card"><span class="dot gray" id="dotMonitor"></span>
+      <div><div class="role">MONITOR</div><div class="zh" id="zhMonitor">市场监控员</div></div>
+      <div class="st"><b id="stMonitor">—</b><span id="detMonitor">—</span></div>
+    </div>
+  </div>
+
+  <div class="glass scout-command">
+    <input id="scoutQuery" autocomplete="off" placeholder="例如：Porsche 964 Carrera RS N-GT，1992 年，预算 €100,000–€400,000">
+    <button class="btn btn-p" onclick="runScoutNow()" type="button" id="scoutRunBtn" data-i18n="btn.runScout">开始巡视市场</button>
+    <button class="btn btn-g btn-sm" onclick="cancelScoutRun()" type="button" id="scoutCancelBtn" style="display:none" data-i18n="btn.cancelRun">取消本轮</button>
+    <button class="btn btn-g btn-sm" onclick="clearScoutForm()" type="button" data-i18n="btn.clear">清空</button>
+  </div>
+  <div id="scoutRunMsg" class="scout-progress-slot" aria-live="polite"></div>
+
+  <div id="scoutMain"><div class="solid empty"><p class="mut">加载中…</p></div></div>
+</section>
+
+<!-- ================= 页面：ANALYST ================= -->
+<section class="page" id="page-analyst">
+  <div class="hero">
+    <div>
+      <h1 class="h1" data-i18n="analyst.page.title">提交一个机会给分析团队</h1>
+      <p class="hero-sub" data-i18n="analyst.page.sub">先记录你的判断，再看 AI 的结论 · Submit to Analyst</p>
+    </div>
+  </div>
+
+  <!-- 分析表单 -->
+  <div class="glass toolbar-card" id="askForm">
+    <div class="h3" style="font-size:15px;letter-spacing:.5px;margin-bottom:16px" data-i18n="form.artist">提交对象 / Submit Opportunity</div>
+    <div class="form-grid">
+      <div class="fld"><label data-i18n="form.artist">艺术家 / 制造商</label><input autocomplete="off" id="artist" placeholder="Takis / Porsche"></div>
+      <div class="fld"><label data-i18n="form.artwork">作品 / 型号</label><input autocomplete="off" id="artwork" placeholder="Signals, Series 1 No.123 / 964 Carrera RS N-GT"></div>
+      <div class="fld"><label data-i18n="form.asking">报价</label><input autocomplete="off" id="price" type="number" placeholder="16000"></div>
+      <div class="fld"><label data-i18n="form.currency">币种</label>
+        <select id="currency"><option>EUR</option><option>GBP</option><option>USD</option><option>CNY</option></select>
+      </div>
+      <div class="fld"><label data-i18n="form.category">类别</label>
+        <select id="category" onchange="toggleCar()">
+          <option value="ART" data-catlabel="cat.ART">艺术品</option><option value="CLASSIC_CAR" data-catlabel="cat.CLASSIC_CAR">经典汽车</option>
+          <option value="DESIGN" data-catlabel="cat.DESIGN">设计</option><option value="COLLECTIBLE" data-catlabel="cat.COLLECTIBLE">收藏品</option>
+          <option value="OTHER" data-catlabel="cat.OTHER">其他</option>
+        </select>
+      </div>
+      <div class="fld"><label data-i18n="form.year">年份</label><input autocomplete="off" id="year" placeholder="1968 / 1992"></div>
+      <div class="fld"><label data-i18n="form.medium">媒介</label><input autocomplete="off" id="medium" placeholder="Steel, electrical system"></div>
+      <div class="fld"><label data-i18n="form.dims">尺寸</label><input autocomplete="off" id="dims" placeholder="197 × 21 × 24 cm"></div>
+      <div class="fld" id="mileageRow" style="display:none"><label data-i18n="form.mileage">里程</label><input autocomplete="off" id="mileage" placeholder="24,175 km"></div>
+      <div class="fld" id="colorRow" style="display:none"><label data-i18n="form.color">颜色</label><input autocomplete="off" id="color" placeholder="Maritime Blue"></div>
+      <div class="fld wide" id="optRow" style="display:none"><label data-i18n="form.options">选装代码</label><input autocomplete="off" id="options" placeholder="003, 018, 130, 220, 231, 388, 389, 404, 564"></div>
+      <div class="fld"><label data-i18n="form.seller">卖家</label><input autocomplete="off" id="seller" placeholder="Galerie Loevenbruck, Paris / Classico 42, Brussels"></div>
+      <div class="fld wide"><label data-i18n="analyst.notes">补充资料</label>
+        <textarea id="notes" placeholder="画廊邮件、卖家报价、拍卖记录、网页链接……（可留空，Analyst 会主动搜索公开资料）"></textarea></div>
+    </div>
+    <div class="chk" style="display:flex;align-items:center;gap:8px;font-size:13px;margin-top:14px">
+      <input type="checkbox" id="research" checked style="accent-color:var(--accent)"> <label for="research" style="margin:0" data-i18n="form.research">自动搜索公开资料</label>
+    </div>
+    <div class="btnrow" style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">
+      <button class="btn btn-p" id="analyze" onclick="doAnalyze()" type="button" data-i18n="form.analyze">开始分析</button>
+      <button class="btn btn-g" onclick="clearAnalysisForm()" type="button" data-i18n="btn.clearForm">清空表单</button>
+    </div>
+    <p class="warn" id="err" style="margin-top:8px"></p>
+  </div>
+
+  <!-- 初始判断（母版 before） -->
+  <div class="section-head"><div class="h2" style="font-size:18px" data-i18n="form.initialTitle">我的初始判断（分析前记录，分析后锁定不可改）</div></div>
+  <div class="before" style="border-radius:var(--radius)">
+    <div class="t" data-i18n="form.beforeHint">BEFORE ANALYSIS — 在看到 AI 结论之前，先记录你的真实判断</div>
+    <div class="grid2">
+      <div class="fld"><label data-i18n="form.initialDecision">当前意向</label>
+        <select id="initDecision"><option value="" data-i18n="form.initialUndecided">— 未决定 —</option>
+          <option>BUY</option><option>NEGOTIATE</option><option>WATCH</option><option>PASS</option><option>UNSURE</option>
+        </select></div>
+      <div class="fld"><label data-i18n="form.initialFair">我的预期合理价</label><input autocomplete="off" id="initFair" type="number" placeholder="€_____"></div>
+      <div class="fld"><label data-i18n="form.initialOffer">我计划的开价</label><input autocomplete="off" id="initOffer" type="number" placeholder="€_____"></div>
+      <div class="fld"><label data-i18n="analyst.notes">备注</label><input autocomplete="off" id="initNote" placeholder="画廊说底价…"></div>
+    </div>
+    <div class="initlock" id="initLock" data-i18n="form.initialLocked">✓ 初始判断已锁定</div>
+  </div>
+
+  <div id="steps"></div>
+  <div id="report"></div>
+</section>
+
+<!-- ================= 页面：WATCHLIST ================= -->
+<section class="page" id="page-watch">
+  <div class="hero">
+    <div>
+      <h1 class="h1" data-i18n="watch.title">市场监控</h1>
+      <p class="hero-sub" data-i18n="watch.pageSub">Watchlist · 持续跟踪你关注的市场，只在值得看的变化时通知你</p>
+    </div>
+  </div>
+  <div id="watchlistMain"></div>
+</section>
+
+<!-- ================= 页面：HISTORY ================= -->
+<section class="page" id="page-history">
+  <div class="hero">
+    <div>
+      <h1 class="h1" data-i18n="history.title">决策历史</h1>
+      <p class="hero-sub" data-i18n="hist.pageSub">History · 你的真实决策记录与关键指标</p>
+    </div>
+  </div>
+  <div id="histStats"></div>
+  <div id="scoutHist"></div>
+  <div class="glass toolbar-card" style="padding:22px"><h2 style="font-size:12px;letter-spacing:1.5px;color:var(--mut);margin-bottom:12px" data-i18n="history.title">历史决策</h2><div id="histRows"></div></div>
+</section>
+
+<!-- ================= 页面：TEAM ================= -->
+<section class="page" id="page-team">
+  <div class="hero">
+    <div>
+      <h1 class="h1" data-i18n="team.title">你的私人情报团队</h1>
+      <p class="hero-sub" data-i18n="team.subtitle">四个数字员工 · 各司其职 · 从不休息</p>
+    </div>
+  </div>
+  <div id="teamMain"></div>
+</section>
+
+<!-- ================= Onboarding 模态 ================= -->
+<div class="modal" id="onboardModal" role="dialog">
+  <div class="mcard">
+    <h2 data-i18n="onboarding.title">KIMI INTELLIGENCE</h2>
+    <p class="mut" data-i18n="onboarding.sub" style="margin-top:8px">我帮你发现、判断并持续监控高价值收藏与交易机会。</p>
+    <div id="onboardBody"></div>
+  </div>
+</div>
+
+<!-- ================= 设置 模态（语言 / 外观 / 团队状态 / Developer） ================= -->
+<div class="modal" id="settingsModal" role="dialog">
+  <div class="mcard">
+    <h2 data-i18n="settings.title">设置</h2>
+    <div id="settingsBody"></div>
+  </div>
+</div>
+
+<!-- Scout 数字详情：按需显示，不占用主页面 -->
+<div class="modal" id="scoutMetricModal" role="dialog" aria-modal="true" onclick="if(event.target===this)closeScoutMetric()">
+  <div class="mcard" style="max-width:720px">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:16px">
+      <h2 id="scoutMetricTitle" style="margin:0">SCOUT DETAILS</h2>
+      <button class="btn btn-g btn-sm" type="button" onclick="closeScoutMetric()">关闭 / Close</button>
+    </div>
+    <div id="scoutMetricBody"></div>
+  </div>
+</div>
+
+<script src="/static/i18n.js?v=4"></script>
+<script>
+const $ = id => document.getElementById(id);
+let ACTIVE_REPORT = null;
+let ACTIVE_SCOUT = null;
+
+// ============ 0.7.2 主题（Light / Dark / System，localStorage） ============
+const THEME_KEY = 'kimi.theme';
+function effectiveTheme(stored){
+  if(!stored || stored === 'system'){
+    return (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+  return stored;
+}
+(function initTheme(){
+  let t = 'system';
+  try{ t = localStorage.getItem(THEME_KEY) || 'system'; }catch(e){}
+  document.documentElement.dataset.theme = effectiveTheme(t);
+  document.documentElement.dataset.themeMode = t;
+})();
+function setTheme(mode){
+  try{ localStorage.setItem(THEME_KEY, mode); }catch(e){}
+  document.documentElement.dataset.themeMode = mode;
+  document.documentElement.dataset.theme = effectiveTheme(mode);
+  syncThemeBtn();
+  const seg = document.getElementById('themeSeg');
+  if(seg) seg.querySelectorAll('button').forEach(b=>b.classList.toggle('on', b.dataset.mode === mode));
+}
+function toggleTheme(){
+  const cur = document.documentElement.dataset.themeMode || 'system';
+  setTheme(cur === 'light' ? 'dark' : cur === 'dark' ? 'system' : 'light');
+}
+function syncThemeBtn(){
+  const b = document.getElementById('themeBtn');
+  if(b){
+    const eff = document.documentElement.dataset.theme || 'light';
+    b.textContent = eff === 'dark' ? '☾' : '◐';
+  }
+}
+
+const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const sym = {EUR:'€',GBP:'£',USD:'$',CNY:'¥'};
+const money = (v,c) => (v==null ? '—' : (sym[c]||'')+(typeof v==='number'?v.toLocaleString():v));
+
+// ============ Agent 状态（母版 agentstrip 映射真实 API） ============
+const DOT = {READY:'green', WORKING:'amber', ACTIVE:'green', OFFLINE:'gray',
+             LIMITED:'amber', PAUSED:'red', IDLE:'gray'};
+function loadTeam(){
+  fetch('/api/agents').then(r=>r.json()).then(j=>{
+    const team = j.team||{};
+    renderAgent('Scout', team.scout, 'team.scout', 'zhScout', 'stScout', 'detScout', 'dotScout');
+    const analystUi = Object.assign({},team.analyst||{}, {state:'READY'});
+    renderAgent('Analyst', analystUi, 'team.analyst', 'zhAnalyst', 'stAnalyst', 'detAnalyst', 'dotAnalyst');
+    renderAgent('Monitor', team.monitor, 'team.monitor', 'zhMonitor', 'stMonitor', 'detMonitor', 'dotMonitor');
+  }).catch(e=>{ console.error('[TEAM] loadTeam failed:', e); });
+}
+function renderAgent(role, st, zhKey, zhEl, stEl, detEl, dotEl){
+  const state = (st&&st.state)||'OFFLINE';
+  const el = $(dotEl);
+  if(el){ el.className = 'dot ' + (DOT[state]||'gray') + (state==='READY'||state==='ACTIVE'||state==='WORKING' ? ' breath' : ''); }
+  const z = $(zhEl); if(z) z.textContent = LANG==='zh-CN' ? t(zhKey) : role;
+  // 母版风格：显示 Ready/Active/Working/Offline…（首字母大写）+ 中文状态说明
+  const label = {READY:'Ready', ACTIVE:'Active', WORKING:'Working', LIMITED:'Limited',
+                 OFFLINE:'Offline', PAUSED:'Paused', IDLE:'Idle'}[state] || state;
+  const s = $(stEl); if(s) s.textContent = label;
+  const d = $(detEl);
+  if(d) d.textContent = t('state.'+state+'.detail') || t('state.'+state) || state;
+}
+
+function humanizeStep(msg){
+  if(LANG!=='zh-CN') return msg;
+  const m = String(msg||'');
+  if(/Generating search queries|Generating/.test(m)) return t('analyst.step1');
+  if(/Searching:|Search cache hit|Searching public/.test(m)) return t('analyst.step2');
+  if(/Candidate records|Verifying sources|Verifying|Evaluating comparability/.test(m)) return t('analyst.step3');
+  if(/LLM 精读|Reading evidence|LLM reading/.test(m)) return t('analyst.step4');
+  if(/pricing|Pricing|Running pricing/.test(m)) return t('analyst.step5');
+  if(/SCOUT 开始|SCOUT 完成|SCOUT 结束/.test(m)) return 'Scout '+m.replace(/SCOUT /,'');
+  if(/完成/.test(m)) return t('analyst.done');
+  return m;
+}
+function addStep(msg){
+  const steps = $('steps');
+  if(steps.dataset.first!=='1'){ steps.innerHTML=''; steps.dataset.first='1';
+    steps.innerHTML = '<div style="font-weight:700">' + t('analyst.working') + '</div>'; }
+  const pretty = humanizeStep(msg);
+  const current = $('progressCurrent'); if(current) current.textContent = pretty;
+  const key = pretty.replace(/[：:。].*$/,'');
+  const seen = (steps.dataset.seen||'').split('|').filter(Boolean);
+  if(!seen.includes(key)) seen.push(key);
+  steps.dataset.seen = seen.join('|');
+  const bar = $('progressBar'); if(bar) bar.style.width = Math.min(94, 8 + seen.length*15)+'%';
+  const d = document.createElement('div'); d.textContent = pretty; d.title = msg;
+  const rawLog=$('rawLog'); if(rawLog){ rawLog.appendChild(d); rawLog.parentNode.open=false; }
+  if(!steps.dataset.raw) steps.dataset.raw = '';
+  steps.dataset.raw += msg + '\n';
+}
+
+// ============ Settings（语言 / 外观 / 团队状态 / Developer） ============
+function openSettings(){
+  const m = $('settingsModal'); m.style.display='flex';
+  const b = $('settingsBody');
+  const zh = LANG==='zh-CN';
+  const cur = document.documentElement.dataset.themeMode || 'system';
+  b.innerHTML =
+      '<div style="margin-bottom:6px"><div style="font-size:11px;letter-spacing:1.2px;color:var(--mut);font-weight:700;margin-bottom:8px">'+t('settings.theme')+'</div>'
+      + '<div class="mk-seg" id="themeSeg">'
+      +   '<button data-mode="light" class="'+(cur==='light'?'on':'')+'" type="button">'+t('settings.theme.light')+'</button>'
+      +   '<button data-mode="dark" class="'+(cur==='dark'?'on':'')+'" type="button">'+t('settings.theme.dark')+'</button>'
+      +   '<button data-mode="system" class="'+(cur==='system'?'on':'')+'" type="button">'+t('settings.theme.system')+'</button>'
+      + '</div></div>'
+      + '<p class="mut" style="font-size:11.5px;margin-bottom:16px">'+t('settings.theme.sub')+'</p>'
+      + '<p class="mut" style="margin-top:8px">' + t('settings.system') + '</p><div class="devbox" id="sysState">…</div>'
+      + '<details open style="margin-top:16px"><summary style="cursor:pointer;font-size:13px;color:var(--ink-2);font-weight:650">'+(zh?'用户通知邮箱':'User notification email')+'</summary>'
+      + '<p class="mut" style="font-size:11.5px;margin:8px 0">'+(zh?'连接一次后会保存在本机，刷新或重启无需重新填写；密码不会显示在页面或接口中。建议使用邮箱的应用专用密码。':'Connect once and the settings remain on this device across refreshes and restarts. The password is never displayed or returned by the API. Use an app password.')+'</p>'
+      + '<div class="form-grid" style="grid-template-columns:2fr 1fr;gap:8px"><div class="fld"><label>'+(zh?'SMTP 主机':'SMTP host')+'</label><input id="smtpHost" placeholder="smtp.gmail.com"></div><div class="fld"><label>'+(zh?'端口':'Port')+'</label><input id="smtpPort" value="587"></div><div class="fld"><label>'+(zh?'邮箱账号':'Email account')+'</label><input id="smtpUser" type="email"></div><div class="fld"><label>'+(zh?'发件显示名（可选）':'From name (optional)')+'</label><input id="smtpFrom" placeholder="User Assistant"></div><div class="fld" style="grid-column:span 2"><label>'+(zh?'应用专用密码':'App password')+'</label><input id="smtpPass" type="password"></div><div class="fld" style="grid-column:span 2"><label>'+(zh?'邮箱网页地址（点击统计时打开）':'Webmail URL')+'</label><input id="webmailUrl" placeholder="https://mail.google.com"></div></div>'
+      + '<div class="btnrow" style="display:flex;gap:10px;margin-top:10px"><button class="btn btn-p btn-sm" type="button" onclick="saveNotificationEmail()">'+(zh?'连接并保存':'Connect & Save')+'</button><span id="commSetupMsg" class="mut" style="font-size:12px"></span></div></details>'
+      + '<details style="margin-top:14px"><summary style="cursor:pointer;font-size:13px;color:var(--ink-2)">' + t('settings.dev') + '</summary>'
+      + '<div class="devbox" id="devInfo" style="margin-top:8px">…</div></details>'
+      + '<p class="mut" style="margin-top:8px">' + t('settings.dev.note') + '</p>'
+      + '<div class="btnrow" style="display:flex;gap:10px;margin-top:16px"><button class="btn btn-g btn-sm" onclick="closeSettings()" type="button">' + t('settings.close') + '</button></div>';
+  document.querySelectorAll('#themeSeg button').forEach(btn=>{
+    btn.addEventListener('click', ()=> setTheme(btn.dataset.mode));
+  });
+  fetch('/api/agents').then(r=>r.json()).then(j=>{
+    const s = j.scheduler||{};
+    const on = t('settings.connected'), off = t('settings.disconnected');
+    $('sysState').textContent =
+      t('settings.sys.search') + ': ' + (j.team&&j.team.scout&&j.team.scout.state!=='OFFLINE' ? on : off) + '\n'
+      + t('settings.sys.analyst') + ': ' + (j.team&&j.team.analyst&&j.team.analyst.state!=='LIMITED' ? on : off) + '\n'
+      + t('settings.sys.scheduler') + ': ' + (s.registered ? t('settings.active') : t('settings.inactive')) + '\n'
+      + t('settings.sys.db') + ': ' + t('settings.healthy');
+    fetch('/api/notifications/email/status').then(r=>r.json()).then(c=>{
+      $('sysState').textContent += '\nEMAIL: ' + (c.configured ? (zh?'已连接':'Connected') : (zh?'未连接（可选）':'Not connected (optional)'));
+      if($('smtpHost')) $('smtpHost').value=c.smtp_host||'';
+      if($('smtpPort')) $('smtpPort').value=c.smtp_port||'587';
+      if($('smtpUser')) $('smtpUser').value=c.smtp_user||'';
+      if($('smtpFrom')) $('smtpFrom').value=c.from_address||'';
+      if($('webmailUrl')) $('webmailUrl').value=c.mailbox_url||'';
+      if(c.password_saved && $('smtpPass')) $('smtpPass').placeholder=zh?'已保存在本机；留空保持不变':'Saved on this device; leave blank to keep it';
+    });
+  });
+  fetch('/api/settings/dev').then(r=>r.json()).then(d=>{
+    $('devInfo').textContent = JSON.stringify(d, null, 2);
+  });
+}
+function closeSettings(){ $('settingsModal').style.display='none'; }
+function saveNotificationEmail(){
+  const p={smtp_host:$('smtpHost').value,smtp_port:$('smtpPort').value,smtp_user:$('smtpUser').value,smtp_password:$('smtpPass').value,from_address:$('smtpFrom').value,webmail_url:$('webmailUrl').value};
+  fetch('/api/notifications/email/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)}).then(async r=>{const j=await r.json();if(!r.ok)throw Error(j.detail||'连接失败');return j}).then(j=>{$('commSetupMsg').textContent=LANG==='zh-CN'?'✓ 已安全保存到本机，重启后仍有效':'✓ Saved on this device and retained after restart'; loadTeam();}).catch(e=>$('commSetupMsg').textContent=e.message);
+}
+
+// ============ Onboarding ============
+function maybeOnboarding(){
+  let done=false; try{ done = localStorage.getItem('kimi.onboarded')==='1'; }catch(e){}
+  if(done) return;
+  $('onboardModal').style.display='flex';
+  const b = $('onboardBody');
+  let step = 1, cats = [], interests = '';
+  function render(){
+    if(step===1){
+      b.innerHTML = '<div class="onboard-step"><p data-i18n="onboarding.step2"></p><div class="chkrow">'
+        + ['art','car','design','collect'].map((k,i)=>'<label><input type="checkbox" data-cat="'+i+'" '+(cats[i]?'checked':'')+'> '+t('onboarding.cat.'+k)+'</label>').join('')
+        + '</div></div><div class="btnrow" style="display:flex;gap:10px;margin-top:14px"><button class="btn btn-g btn-sm" onclick="skipOnboarding()" type="button">'+t('onboarding.skip')+'</button><button class="btn btn-p btn-sm" onclick="obNext()" type="button">→</button></div>';
+    } else if(step===2){
+      b.innerHTML = '<div class="onboard-step"><p data-i18n="onboarding.step3"></p>'
+        + '<p style="font-size:16px;margin-top:6px">€10,000 — €500,000</p>'
+        + '<p class="mut">' + t('misc.currency') + '…</p></div>'
+        + '<div class="btnrow" style="display:flex;gap:10px;margin-top:14px"><button class="btn btn-g btn-sm" onclick="obPrev()" type="button">←</button><button class="btn btn-p btn-sm" onclick="obNext()" type="button">→</button></div>';
+    } else if(step===3){
+      b.innerHTML = '<div class="onboard-step"><p data-i18n="onboarding.step4"></p>'
+        + '<textarea id="obInterests" style="width:100%;min-height:80px;border:1px solid var(--line-strong);border-radius:9px;padding:12px;background:var(--glass);color:var(--ink);font-family:inherit;font-size:13.5px" placeholder="kinetic art, museum-level artists, competition cars…">'+interests+'</textarea></div>'
+        + '<div class="btnrow" style="display:flex;gap:10px;margin-top:14px"><button class="btn btn-g btn-sm" onclick="obPrev()" type="button">←</button><button class="btn btn-p btn-sm" onclick="obNext()" type="button">→</button></div>';
+    } else {
+      b.innerHTML = '<div class="onboard-step"><p class="mut">'+t('onboarding.title')+'</p></div>'
+        + '<div class="btnrow" style="display:flex;gap:10px;margin-top:14px"><button class="btn btn-g btn-sm" onclick="obPrev()" type="button">←</button><button class="btn btn-p btn-sm" onclick="obFinish()" type="button">'+t('onboarding.start')+'</button></div>';
+    }
+    applyStaticI18n();
+  }
+  window.obNext = ()=>{
+    if(step===1){ const cs=b.querySelectorAll('[data-cat]'); cats=[]; cs.forEach(c=>cats.push(c.checked)); }
+    if(step===3){ const oi=$('obInterests'); if(oi) interests = oi.value; }
+    step++; render();
+  };
+  window.obPrev = ()=>{ if(step>1){ step--; render(); } };
+  window.obFinish = ()=>{
+    const catMap = ['ART','CLASSIC_CAR','DESIGN','COLLECTIBLE'];
+    const sel = catMap.filter((_,i)=>cats[i]);
+    fetch('/api/scout/profile',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({categories:sel.length?sel:['ART','CLASSIC_CAR'], budget_low:10000,
+        budget_high:500000, interests:interests, seeds_artists:'', seeds_models:'', seeds_keywords:''})})
+      .then(()=>{ try{localStorage.setItem('kimi.onboarded','1');}catch(e){} $('onboardModal').style.display='none'; loadScout(); })
+      .catch(()=>{ try{localStorage.setItem('kimi.onboarded','1');}catch(e){} $('onboardModal').style.display='none'; });
+  };
+  render();
+}
+window.skipOnboarding = ()=>{ try{localStorage.setItem('kimi.onboarded','1');}catch(e){} $('onboardModal').style.display='none'; };
+
+// ============ i18n ============
+function applyStaticI18n(){
+  document.querySelectorAll('[data-i18n]').forEach(el=>{ el.textContent = t(el.getAttribute('data-i18n')); });
+}
+function applyI18n(){
+  syncThemeBtn();
+  applyStaticI18n();
+  $('langZh').className = LANG==='zh-CN'?'lang-on':'';
+  $('langEn').className = LANG==='en-US'?'lang-on':'';
+  // 导航：英文模式主文本用英文；中文模式中文主 + small 英文
+  document.querySelectorAll('.mk-navlinks button').forEach(b=>{
+    const main = b.querySelector('span[data-i18n^="nav."]:not([data-i18n*=".en"])');
+    const sub = b.querySelector('small[data-i18n*=".en"]');
+    if(main) main.textContent = t(main.getAttribute('data-i18n'));
+    if(sub){
+      sub.textContent = t(sub.getAttribute('data-i18n'));
+      if(sub.textContent === main.textContent) sub.style.display='none'; else sub.style.display='';
+    }
+  });
+  document.querySelectorAll('#page-analyst label[data-i18n], #askForm label[data-i18n]').forEach(el=>{
+    if(el.getAttribute('data-i18n')) el.textContent = t(el.getAttribute('data-i18n'));
+  });
+  document.querySelectorAll('#category option').forEach(o=>{ o.textContent = catLabel(o.value); });
+  loadTeam();
+  const scoutRunMsg=$('scoutRunMsg'); if(scoutRunMsg) scoutRunMsg.textContent='';
+  const active = document.querySelector('.mk-navlinks button.on');
+  const pg = active ? active.dataset.page : 'scout';
+  if(pg==='scout') loadScout();
+  if(pg==='watch') loadWatchlist();
+  if(pg==='history') loadHistory();
+  if(pg==='team') loadTeamPage();
+}
+
+// ============ 母版导航 ============
+function gotoPage(pg){
+  document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + pg));
+  document.querySelectorAll('.mk-navlinks button').forEach(b => b.classList.toggle('on', b.dataset.page === pg));
+  window.scrollTo({top: 0, behavior: 'smooth'});
+  if(pg==='scout') loadScout();
+  if(pg==='watch') loadWatchlist();
+  if(pg==='history') loadHistory();
+  if(pg==='team') loadTeamPage();
+}
+document.querySelectorAll('.mk-navlinks button').forEach(b=>{ b.onclick = ()=>gotoPage(b.dataset.page); });
+
+// ============ TEAM 页（真实 API 四端点并发） ============
+function loadTeamPage(){
+  fetch('/api/agents').then(r=>r.json()).then(j=>{
+    const team = j.team||{};
+    const sig = Promise.allSettled([
+      fetch('/api/scout/today').then(r=>r.json()).catch(()=>null),
+      fetch('/api/scout/history').then(r=>r.json()).catch(()=>null),
+      fetch('/api/history').then(r=>r.json()).catch(()=>null),
+      fetch('/api/watch').then(r=>r.json()).catch(()=>null)
+    ]);
+    sig.then(arr=>{
+      const today = arr[0].value || {};
+      const hist = arr[1].value || {runs:[]};
+      const hst = arr[2].value || {stats:{}};
+      const wchs = arr[3].value || {watches:[]};
+      const scoutBrief = today.brief || {};
+      const lastRun = (hist.runs && hist.runs[0]) || null;
+      const stats = hst.stats || {};
+      const changes = (wchs.watches||[]).reduce((a,w)=>a + (w.changes_count||0), 0);
+      const activeW = (wchs.watches||[]).filter(w=>w.status==='ACTIVE').length;
+      const sScout = (team.scout&&team.scout.state)||'OFFLINE';
+      const sAnalyst = 'READY';
+      const sMonitor = (team.monitor&&team.monitor.state)||'OFFLINE';
+      const badge = s => s==='READY'||s==='ACTIVE' ? 'green' : s==='WORKING' ? 'amber' : s==='PAUSED' ? 'red' : 'gray';
+      const ddot = s => (s==='READY'||s==='ACTIVE'||s==='WORKING') ? 'dot green breath' : s==='PAUSED' ? 'dot red' : 'dot gray';
+      const cards = [
+        {role:'SCOUT', zh:'team.scout', quote:'team.scout.desc',
+         st:sScout, stTxt:sScout==='READY'?t('team.ready'):sScout,
+         stats:[
+           {n:lastRun?Number(lastRun.queries||0):0, l:t('team.metric.scoutScans'), sub:t('team.metric.scoutSub')},
+           {n:lastRun?Number(lastRun.candidates||0):0, l:t('team.metric.scoutCand')},
+           {n:lastRun?Number(lastRun.recommended||0):0, l:t('team.metric.scoutRec'), sub:''+Number(scoutBrief.recommended||0)},
+           {n:lastRun?Number(lastRun.records||0):0, l:t('brief.records')}
+         ]},
+        {role:'ANALYST', zh:'team.analyst', quote:'team.analyst.desc',
+         st:sAnalyst, stTxt:sAnalyst==='READY'?t('team.ready'):sAnalyst,
+         stats:[
+           {n:Number(stats.total_opportunities||0), l:t('team.metric.anaRuns')},
+           {n:Number(stats.decision_changed||0), l:t('team.metric.anaChanged')},
+           {n:(stats.decision_change_rate!=null?stats.decision_change_rate:0)+'%', l:t('team.metric.anaChangeRate')},
+           {n:(stats.avg_negotiated_discount!=null?stats.avg_negotiated_discount:0)+'%', l:t('team.metric.anaAvg')}
+         ]},
+        {role:'MONITOR', zh:'team.monitor', quote:'team.monitor.desc',
+         st:sMonitor, stTxt:sMonitor==='ACTIVE'?t('team.active'):sMonitor,
+         stats:[
+           {n:activeW, l:t('team.metric.monActive')},
+           {n:changes, l:t('team.metric.monChanges')},
+           {n:(wchs.watches||[]).reduce((a,w)=>a+((w.action_alerts_count)||0),0), l:t('team.metric.monAction')},
+           {n:(j.scheduler&&j.scheduler.registered)?'08:00 / 20:00':t('settings.inactive'), l:t('team.metric.monNext')}
+        ]}
+      ];
+      let h = '<div class="team-grid">';
+      cards.forEach(c=>{
+        h += '<div class="glass team-card">';
+        h += '<div class="head"><div class="role">'+c.role+'</div><div class="zhline"><div class="zh">'+t(c.zh)+'</div>'
+          + '<span class="badge '+badge(c.st)+'"><span class="'+ddot(c.st)+'" style="width:6px;height:6px"></span>'+c.stTxt+'</span></div></div>';
+        h += '<p class="quote">'+ t(c.quote) +'</p>';
+        h += '<div class="stats">';
+        c.stats.forEach(k=>{
+          const target = c.role==='SCOUT'?'scout':c.role==='ANALYST'?'analyst':c.role==='MONITOR'?'watch':(k.action==='mail'?'mail':'settings');
+          const click = target==='mail'?'openMailbox()':target==='settings'?'openSettings()':'gotoPage(\''+target+'\')';
+          h += '<button type="button" class="solid st2" onclick="'+click+'" title="'+(LANG==='zh-CN'?'打开相关页面':'Open related page')+'"><b class="num">'+k.n+'</b><span>'+k.l+(k.sub?' · '+k.sub:'')+'</span></button>';
+        });
+        h += '</div></div>';
+      });
+      h += '</div>';
+      $('teamMain').innerHTML = h;
+    });
+  }).catch(e=>{
+    console.error('[TEAM] loadTeamPage failed:', e);
+    $('teamMain').innerHTML = '<p class="warn">' + t('team.err') + '</p>';
+  });
+}
+
+// ================= 启动 =================
+fetch('/api/health').then(r=>r.json()).then(()=>{ loadTeam(); });
+applyI18n();
+maybeOnboarding();
+
+// ================= Analyst =================
+function toggleCar(){
+  const car = $('category').value === 'CLASSIC_CAR';
+  ['mileageRow','colorRow','optRow'].forEach(id=>$(id).style.display = car?'':'none');
+}
+function statusTag(s){
+  const m = {VERIFIED:['v','来源已验证'], UNVERIFIED:['u','尚未验证'], CONFLICTING:['c','证据冲突']};
+  const [cls,txt] = m[s]||['u',s||'尚未验证'];
+  return '<span class="tag '+cls+'">'+txt+'</span>';
+}
+function compTag(c){
+  const m = {HIGH:['h','高度可比'], MEDIUM:['m','中度可比'], LOW:['l','低度可比'], NOT_COMPARABLE:['n','不可比']};
+  if(!c.comparability) return '<span class="tag h">人工断言</span>';
+  const [cls,txt] = m[c.comparability]||['l',c.comparability];
+  return '<span class="tag '+cls+'">'+txt+'</span>';
+}
+function saleTag(c){
+  const m = {SOLD:['v','成交'], ASKING:['l','挂牌'], ESTIMATE:['m','估价'], UNKNOWN:['u','性质不明']};
+  const [cls,txt] = m[c.sale_type]||['u',c.sale_type];
+  return '<span class="tag '+cls+'">'+txt+'</span>';
+}
+function sevTag(s){
+  const m = {CRITICAL:'HIGH',HIGH:'HIGH',MEDIUM:'MEDIUM',LOW:'LOW'};
+  return '<span class="tag s '+s+'">'+(m[s]||s)+'</span>';
+}
+
+function doAnalyze(){
+  $('err').textContent=''; $('analyze').disabled=true; $('analyze').textContent = t('analyst.working')+'…';
+  const steps = $('steps'); steps.style.display='block';
+  steps.innerHTML = '<div style="font-weight:700">' + t('analyst.working') + '</div><div class="progress-track"><div id="progressBar" class="progress-fill" style="width:8%"></div></div><div id="progressCurrent" class="mut" style="font-size:12px;margin-top:6px">'+t('analyst.working')+'…</div>'
+    + '<details style="margin-top:8px"><summary style="cursor:pointer;color:var(--mut);font-size:12px">' + t('analyst.detail') + '</summary><div id="rawLog" style="font-size:11px;color:#888;margin-top:6px"></div></details>';
+  steps.dataset.first='1'; steps.dataset.raw='';
+  const body = {
+    artist: $('artist').value.trim(),
+    artwork: $('artwork').value.trim(),
+    asking_price: $('price').value ? parseFloat($('price').value) : null,
+    currency: $('currency').value,
+    category: $('category').value,
+    research: $('research').checked,
+    year: $('year').value.trim() || null,
+    medium: $('medium').value.trim() || null,
+    dimensions: $('dims').value.trim() || null,
+    seller: $('seller').value.trim() || null,
+    notes: $('notes').value,
+    mileage: $('mileage').value.trim() || null,
+    color: $('color').value.trim() || null,
+    options: $('options').value.trim() || null,
+    initial_decision: $('initDecision').value || null,
+    initial_expected_fair: $('initFair').value ? parseFloat($('initFair').value) : null,
+    initial_planned_offer: $('initOffer').value ? parseFloat($('initOffer').value) : null
+  };
+  fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    .then(resp=>{
+      const reader = resp.body.getReader();
+      const dec = new TextDecoder();
+      let buf = '', report = null, error = null;
+      function pump(){
+        return reader.read().then(({done,value})=>{
+          if(done) return finish();
+          buf += dec.decode(value,{stream:true});
+          const lines = buf.split('\n'); buf = lines.pop();
+          for(const ln of lines){
+            if(!ln.trim()) continue;
+            let ev; try{ ev = JSON.parse(ln); }catch(e){ continue; }
+            if(ev.type==='step'){ addStep(ev.message); }
+            else if(ev.type==='report'){ report = ev.report; const bar=$('progressBar'); if(bar) bar.style.width='100%'; const cur=$('progressCurrent'); if(cur) cur.textContent=t('analyst.progress.complete').replace('{n}','6'); }
+            else if(ev.type==='error'){ error = ev.message; }
+          }
+          return pump();
+        });
+      }
+      function finish(){
+        const bar = $('progressBar'); if(bar) bar.style.width='100%';
+        const curStep = $('progressCurrent'); if(curStep) curStep.textContent = t('analyst.progress.complete').replace('{n}','6');
+        const heading = steps.querySelector('div[style*="font-weight"]'); if(heading) heading.textContent = t('analyst.progress.complete').replace('{n}','6');
+        if(error){ $('err').textContent = '分析失败：'+error; return; }
+        if(report) renderReport(report);
+        if(!$('research').checked) steps.style.display='none';
+      }
+      return pump();
+    })
+    .catch(e=>{ $('err').textContent='请求失败：'+e; })
+    .finally(()=>{ $('analyze').disabled=false; $('analyze').textContent='开始分析'; lockInit(); });
+}
+function clearAnalysisForm(){
+  ['artist','artwork','price','year','medium','dims','mileage','color','options','seller','notes','initFair','initOffer','initNote'].forEach(id=>{const e=$(id);if(e){e.value='';e.disabled=false;}});
+  const d=$('initDecision'); if(d){d.value='';d.disabled=false;}
+  const r=$('research'); if(r) r.checked=true;
+  const cat=$('category'); if(cat){cat.value='ART';toggleCar();}
+  const cur=$('currency'); if(cur) cur.value='EUR';
+  const lk=$('initLock'); if(lk) lk.style.display='none';
+  const steps=$('steps'); if(steps){steps.style.display='none';steps.innerHTML='';}
+  const report=$('report'); if(report) report.innerHTML='';
+  const err=$('err'); if(err) err.textContent='';
+  const btn=$('analyze'); if(btn){btn.disabled=false;btn.textContent=t('form.analyze');}
+}
+function lockInit(){
+  ['initDecision','initFair','initOffer'].forEach(id=>{ const el=$(id); if(el) el.disabled = true; });
+  const lk=$('initLock'); if(lk) lk.style.display='block';
+}
+function doBacktest(){
+  $('err').textContent='';
+  fetch('/api/backtest/takis',{method:'POST'}).then(r=>r.json()).then(renderBacktest)
+    .catch(e=>{ $('err').textContent='回测失败：'+e; });
+}
+function renderResearchSummary(rs){
+  if(!rs || !rs.enabled) return '';
+  const zh = LANG==='zh-CN';
+  let h = '<div class="glass toolbar-card" style="padding:20px"><details><summary style="cursor:pointer;font-size:13px;color:var(--mut)">' + (zh?'▸ 研究过程（高级信息）':'▸ Research Process (advanced)') + '</summary><div style="margin-top:10px"><div class="kv">';
+  h += '<div><b>'+(zh?'检索来源':'Search Source')+'</b> '+rs.provider+'</div>';
+  h += '<div><b>'+(zh?'查询 / 候选':'Queries / Candidates')+'</b> '+rs.queries_executed+' / '+rs.candidates+'</div>';
+  h += '<div><b>H / M / L / NC</b> '+rs.high+' / '+rs.medium+' / '+rs.low+' / '+rs.not_comparable+'</div>';
+  h += '<div><b>'+(zh?'成交 / 挂牌 / 估价 池':'Sold / Asking / Est. Pools')+'</b> '+rs.sold_pool+' / '+rs.asking_pool+' / '+rs.estimate_pool+'</div>';
+  h += '</div><p class="mut" style="margin-top:8px;font-size:11.5px">'+(zh?'基础设施指标（Provider / Cache / Cost）请在 设置 → 开发者信息 中查看。':'Infrastructure metrics (Provider/Cache/Cost) are visible in Settings → Developer info.')+'</p></div></details></div>';
+  return h;
+}
+
+// ============ Analyst 母版渲染（Decision / Evidence / Risk / Next） ============
+function renderWorkflow(r){
+  const steps = [
+    t('analyst.progress.step1'), t('analyst.progress.step2'), t('analyst.progress.step3'),
+    t('analyst.progress.step4'), t('analyst.progress.step5'), t('analyst.progress.step6')
+  ];
+  const doneCount = r ? 6 : 0;
+  let h = '<div class="glass workflow">';
+  h += '<div class="wf-head">'+t('analyst.progress')+' <span class="badge green" style="margin-left:auto">'+t('analyst.progress.complete').replace('{n}','<span class="num"></span>')+'</span></div>';
+  h += '<div class="wf-steps">';
+  steps.forEach((s,i)=>{
+    const st = i < doneCount ? 'done' : (i === doneCount ? 'active' : '');
+    h += '<div class="wf-step '+st+'"><span class="n">'+(i < doneCount ? '✓' : '●')+'</span>'+s+'</div>';
+    if(i < steps.length-1) h += '<span class="wf-line"></span>';
+  });
+  h += '</div></div>';
+  return h;
+}
+
+function renderDecision(b, c){
+  const zhMap = {BUY:'建议买入',NEGOTIATE:'建议谈价',WATCH:'继续观察',PASS:'放弃'};
+  const cls = {BUY:'buy',NEGOTIATE:'',WATCH:'watch',PASS:'pass'};
+  const dec = b.decision||'—';
+  return '<div class="glass decision">'
+    + '<div class="d-label">'+t('decision.label')+'</div>'
+    + '<div class="d-main '+ (cls[dec]||'') +'">'+dec+'</div>'
+    + '<div class="d-zh">'+ (zhMap[dec]||t('decision.advice')) + (r_concl?' · '+r_concl:'') +'</div>'
+    + '<div class="d-nums">'
+    +   '<div><span>'+t('decision.asking')+'</span><b class="num">'+money(b.asking_price,c)+'</b></div>'
+    +   '<div class="hl"><span>'+t('decision.fair')+'</span><b class="num">'+money(b.fair_range_low,c)+' – '+money(b.fair_range_high,c)+'</b></div>'
+    +   '<div class="hl"><span>'+t('decision.opening')+'</span><b class="num">'+money(b.opening_offer,c)+'</b></div>'
+    +   '<div><span>'+t('decision.max')+'</span><b class="num">'+money(b.target_high||b.walk_away,c)+'</b></div>'
+    + '</div>'
+    + '<div class="conf-line">'
+    +   '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--mut)"><span>CONFIDENCE</span><b class="num" style="color:var(--ink)">'+(b.confidence||0)+'%</b></div>'
+    +   '<div class="conf-track"><i style="width:'+(b.confidence||0)+'%"></i></div>'
+    + '</div>'
+    + '</div>';
+}
+let r_concl = '';
+
+function renderEvidenceCards(r){
+  if(!r.evidence || !r.evidence.length) return '<div class="solid empty" style="padding:28px"><p class="mut">'+t('analyst.noAskYet')+'</p></div>';
+  const sorted = [...r.evidence].slice(0,4);
+  let h = '';
+
+  sorted.forEach((e,i)=>{
+    const ord = String(i+1).padStart(2,'0');
+    const stVer = e.verification_status==='VERIFIED';
+    const badges = [];
+    if(stVer) badges.push('<span class="badge green">'+t('enum.verified')+'</span>');
+    if(e.translated_text) badges.push('<span class="badge ghost">'+t('evidence.translated')+'</span>');
+    if(!stVer) badges.push('<span class="badge gray">'+t('enum.unverified')+'</span>');
+    const hasDetail = e.evidence || e.translated_text;
+    h += '<div class="glass ev-card">'
+      + '<span class="ev-no">'+ord+'</span>'
+      + '<div class="src">'+esc(e.source_name||'—')+'</div>'
+      + '<h4>'+esc(e.claim||'—')+'</h4>'
+      + '<div class="meta">'+(e.value?esc(e.value):'')+'</div>'
+      + '<div class="price num">'+(e.value||'—')+'</div>'
+      + '<div class="ev-badges">'+badges.join('')+'</div>'
+      + (hasDetail
+        ? '<button class="btn btn-g btn-sm" style="margin-top:12px" onclick="this.nextElementSibling.classList.toggle(\'open\');this.textContent=this.nextElementSibling.classList.contains(\'open\')?this.dataset.close:this.dataset.open" data-open="'+t('evidence.expand')+'" data-close="'+t('evidence.expand')+'">'+t('evidence.expand')+'</button>'
+          + '<div class="ev-x">'+(e.translated_text?esc(e.translated_text):esc((e.evidence||'').slice(0,400)))
+          + ((e.evidence && e.translated_text && String(e.evidence).toLowerCase()!==String(e.translated_text).toLowerCase())
+              ? '<div class="orig"><a target="_blank" href="'+(e.source_url||'#')+'" onclick="event.stopPropagation()">'+t('evidence.viewOriginal')+' ↗</a><br>'+esc(e.evidence.slice(0,500))+'</div>'
+              : (e.source_url?'<a target="_blank" href="'+e.source_url+'">'+t('evidence.viewOriginal')+' ↗</a>':''))
+          + '</div>'
+        : '')
+      + '</div>';
+  });
+  return h;
+}
+
+function renderRisks(r){
+  if(!r.risks || !r.risks.length) return '';
+  const order = {CRITICAL:0,HIGH:1,MEDIUM:2,LOW:3};
+  const lv = {CRITICAL:'h',HIGH:'h',MEDIUM:'m',LOW:'l'};
+  const sorted = [...r.risks].sort((a,b)=>(order[a.severity]||2)-(order[b.severity]||2)).slice(0,3);
+  let h = '<div class="risk-list">';
+  sorted.forEach(x=>{
+    h += '<div class="glass risk-row '+lv[x.severity]+'"><span class="risk '+lv[x.severity].replace('h','high').replace('m','med').replace('l','low')+'"><i></i>'+x.severity+'</span><div class="txt">'+esc(x.text||'')+'</div></div>';
+  });
+  h += '</div>';
+  return h;
+}
+
+function renderNextAction(b, c){
+  if(!b || !b.next_action) return '';
+  return '<div class="next-action" style="border-radius:var(--radius)">'
+    + '<div class="t">'+t('next.title').toUpperCase()+'</div>'
+    + '<p>'+esc(b.next_action||'')+'</p>'
+    + '<div class="offer">'+t('next.suggestedOffer')+' <b class="num">'+money(b.opening_offer,c)+'</b><span class="badge amber">'+t('next.emailSoon')+'</span></div>'
+    + '</div>';
+}
+
+function renderReport(r){
+  // 兼容旧报告：历史上曾把合理区间下限乘 0.85，导致 Range Rover 出现 $816。
+  // 展示层先纠正旧数据；新报告由后端使用同一公式生成并会持久化。
+  const rb = r && r.brief, rn = r && r.negotiation;
+  const ask = Number((r.input||{}).asking_price||0), lo = Number(rb&&rb.fair_range_low||0), hi = Number(rb&&rb.fair_range_high||0);
+  if(rb && lo>0 && hi>=lo){
+    const mid=(lo+hi)/2; const corrected=Math.round(ask>0 ? Math.min(ask, Math.max(lo, Math.min(mid, ask*0.90))) : mid*0.90);
+    if(Number(rb.opening_offer||0) < lo*0.90 || Number(rb.opening_offer||0) === Math.round(lo*0.85)) rb.opening_offer=corrected;
+    if(rn && (Number(rn.opening_offer||0) < lo*0.90 || Number(rn.opening_offer||0) === Math.round(lo*0.85))) rn.opening_offer=corrected;
+  }
+  const p = r.price||{}, n = r.negotiation||{}, b = r.brief||{};
+  const c = (r.input&&r.input.currency)||'EUR';
+  ACTIVE_REPORT = r;
+  r_concl = r.conclusion||'';
+  let h = '';
+  h += renderWorkflow(r);
+  // 左决策 + 右证据
+  h += '<div class="brief-grid">';
+  h += renderDecision(b, c);
+  h += '<div style="display:flex;flex-direction:column;gap:16px"><div class="section-head" style="margin:0"><div class="h2" style="font-size:15px">'+t('brief.evidence')+'</div></div>'+renderEvidenceCards(r)+'</div>';
+  h += '</div>';
+  // 风险
+  if(r.risks && r.risks.length){
+    h += '<div class="section-head"><div class="h2" style="font-size:18px">'+t('risk.title')+'</div></div>';
+    h += renderRisks(r);
+  }
+  // Next Action
+  if(b && b.next_action){
+    h += '<div class="section-head"><div class="h2" style="font-size:18px">'+t('next.title')+'</div></div>';
+    h += renderNextAction(b, c);
+  }
+  // 结论 + 决策依据
+  h += '<div class="glass toolbar-card" style="margin-top:20px"><div class="banner '+r.decision+'">'+r.decision+' · '+esc(r.conclusion||'')+'</div>';
+  h += '<p style="font-size:13.5px;line-height:1.7;color:var(--ink-2)">'+esc(r.conclusion_reason||'')+'</p>';
+  if(r.warnings&&r.warnings.length) r.warnings.forEach(w=>h+='<p class="warn" style="margin-top:6px">'+esc(w)+'</p>');
+  h += '</div>';
+  const comps = p.comparables||[];
+  const eligible = comps.filter(cp=>(cp.sale_type==='SOLD'||cp.price_basis==='SOLD') && cp.price!=null && cp.price_basis!=='UNKNOWN' && Number(cp.source_tier||9)<=2 && ['HIGH','MEDIUM'].includes(cp.comparability));
+  const fairRange = (p.ai_fair_range_low!=null && p.ai_fair_range_high!=null) ? money(p.ai_fair_range_low,c)+' – '+money(p.ai_fair_range_high,c) : (LANG==='zh-CN'?'等待可靠成交':'Awaiting reliable sales');
+  h += '<div class="report-lower">';
+  h += '<div class="glass report-section"><div class="report-section-title"><h3>'+(LANG==='zh-CN'?'价格判断':'Price judgment')+'</h3><span>'+(LANG==='zh-CN'?'只采用口径明确的真实成交':'Verified sold prices only')+'</span></div>';
+  h += '<div class="price-judgment"><div><b>'+(LANG==='zh-CN'?'市场成交区间':'Observed range')+'</b><span>'+esc(p.observed_market_range||(LANG==='zh-CN'?'尚未形成':'Not established'))+'</span></div>';
+  h += '<div><b>'+(LANG==='zh-CN'?'建议合理区间':'Suggested range')+'</b><span>'+fairRange+'</span></div>';
+  h += '<div><b>'+(LANG==='zh-CN'?'判断把握':'Confidence')+'</b><span>'+Number(p.confidence||0)+'%</span></div></div>';
+  if(!eligible.length) h += '<p class="mut" style="margin-top:10px">'+(LANG==='zh-CN'?'目前没有满足“已成交、价格口径明确、来源可靠、对象可比”四项条件的记录，因此不编造价格。':'No record currently meets all four pricing requirements, so no price is invented.')+'</p>';
+  h += '</div>';
+  if(comps.length){
+    h += '<div class="glass report-section"><div class="report-section-title"><h3>'+(LANG==='zh-CN'?'成交依据':'Transaction evidence')+'</h3><span>'+(LANG==='zh-CN'?'共 '+comps.length+' 条资料 · '+eligible.length+' 条纳入价格判断':comps.length+' records · '+eligible.length+' used for pricing')+'</span></div>';
+    h += '<div class="tablewrap"><table><tr><th>'+(LANG==='zh-CN'?'对象':'Item')+'</th><th>'+(LANG==='zh-CN'?'价格':'Price')+'</th><th>'+(LANG==='zh-CN'?'用途':'Use')+'</th><th>'+(LANG==='zh-CN'?'来源':'Source')+'</th></tr>';
+    comps.slice(0,4).forEach(cp=>{
+      const isEligible = eligible.includes(cp);
+      const purpose = isEligible ? (LANG==='zh-CN'?'纳入均价':'Used in average') : ((cp.sale_type==='ASKING'||cp.price_basis==='ASKING') ? (LANG==='zh-CN'?'挂牌参考':'Asking reference') : (LANG==='zh-CN'?'仅作线索':'Clue only'));
+      const src = cp.source_url ? '<a href="'+cp.source_url+'" target="_blank" style="color:var(--accent-ink)">'+esc(cp.source_name||'查看来源')+'</a>' : esc(cp.source_name||(LANG==='zh-CN'?'未提供':'Not provided'));
+      h += '<tr><td>'+esc(cp.title||'')+(cp.year?' ('+cp.year+')':'')+'</td><td>'+money(cp.price,cp.currency)+'</td><td><span class="tag '+(isEligible?'h':'l')+'">'+purpose+'</span></td><td>'+src+'</td></tr>';
+    });
+    h += '</table></div>';
+    if(comps.length>4) h += '<details style="margin-top:12px"><summary style="cursor:pointer;color:var(--accent-ink);font-size:12px;font-weight:650">'+(LANG==='zh-CN'?'查看其余 '+(comps.length-4)+' 条资料':'View '+(comps.length-4)+' more records')+'</summary><p class="mut" style="margin-top:8px">'+(LANG==='zh-CN'?'其余资料保留用于追溯，不参与当前价格计算。':'Remaining records are retained for traceability and are not used in the current price calculation.')+'</p></details>';
+    h += '</div>';
+  }
+  h += '<div class="glass report-section"><div class="report-section-title"><h3>'+(LANG==='zh-CN'?'我的决定':'My decision')+'</h3><span>'+(LANG==='zh-CN'?'保存后进入历史记录':'Saved to history')+'</span></div>'+renderFinalDecision(r)+'</div>';
+  h += '</div>';
+  h += '<p class="mut" style="text-align:center;margin-bottom:40px">'+(LANG==='zh-CN'?'分析完成':'Analysis complete')+' · '+(r.created_at||'').slice(0,19).replace('T',' ')+'</p>';
+  $('report').innerHTML = h;
+}
+
+function renderFinalDecision(r){
+  const inp = r.input||{}, c = inp.currency||'EUR';
+  let h = '<div>';
+  h += '<div class="kv">';
+  h += '<div><b>'+(LANG==='zh-CN'?'我的初始判断':'My Initial View')+'</b> '+(inp.initial_decision||'未记录')+(inp.initial_planned_offer?' · '+(LANG==='zh-CN'?'计划开价 ':'planned offer ')+money(inp.initial_planned_offer,c):'')+'</div>';
+  h += '<div><b>'+(LANG==='zh-CN'?'分析建议':'Analyst Recommendation')+'</b> <span class="mut">（系统自动，不可修改）</span> '+(r.decision||'—')+' · '+(LANG==='zh-CN'?'建议开价 ':'Opening ')+money((r.negotiation||{}).opening_offer,c)+' · '+(LANG==='zh-CN'?'最高价 ':'Walk-away ')+money((r.negotiation||{}).walk_away,c)+'</div>';
+  h += '</div>';
+  h += '<div class="form-grid" style="margin-top:14px">';
+  h += '<div class="fld"><label>'+t('mem.finalDecision')+'</label><select id="fdDecision"><option value="">—</option><option>BUY</option><option>NEGOTIATE</option><option>WATCH</option><option>PASS</option></select></div>';
+  h += '<div class="fld"><label>'+t('mem.finalOffer')+'</label><input autocomplete="off" id="fdOffer" type="number" placeholder="€_____"></div>';
+  h += '<div class="fld"><label>'+t('mem.finalPrice')+'</label><input autocomplete="off" id="fdPrice" type="number" placeholder="€_____"></div>';
+  h += '<div class="fld"><label>'+t('mem.txStatus')+'</label><select id="fdStatus"><option value="">—</option><option>BOUGHT</option><option>NOT_BOUGHT</option><option>STILL_NEGOTIATING</option><option>PASSED</option></select></div>';
+  h += '<div class="fld"><label>'+t('mem.changed')+'</label><select id="fdChanged"><option value="">—</option><option>YES</option><option>NO</option></select></div>';
+  h += '<div class="fld"><label>Why?（自由文本）</label><input autocomplete="off" id="fdNotes" placeholder="这次分析有没有改变你的决定？为什么？"></div>';
+  h += '</div>';
+  h += '<div class="btnrow" style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;align-items:center"><button class="btn btn-p btn-sm" onclick="saveDecision('+(r.id||0)+')" type="button">'+(LANG==='zh-CN'?'保存决定':'SAVE DECISION')+'</button>'
+     + '<button class="btn btn-g btn-sm" onclick="watchThisMarket()" type="button">'+(LANG==='zh-CN'?'加入监控':'+ WATCH THIS MARKET')+'</button>'
+     + '<span class="mut" id="fdMsg" style="font-size:12px"></span></div>';
+  h += '</div>';
+  return h;
+}
+function saveDecision(reportId){
+  if(!reportId){ $('fdMsg').textContent='该报告未持久化，无法保存'; return; }
+  const body = {
+    report_id: reportId,
+    final_decision: $('fdDecision').value || null,
+    final_offer: $('fdOffer').value ? parseFloat($('fdOffer').value) : null,
+    final_transaction_price: $('fdPrice').value ? parseFloat($('fdPrice').value) : null,
+    transaction_status: $('fdStatus').value || null,
+    decision_changed: $('fdChanged').value || null,
+    notes: $('fdNotes').value
+  };
+  fetch('/api/decision-memory',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    .then(r=>r.json()).then(j=>{
+      $('fdMsg').textContent = j.saved ? '✓ 已保存（Analyst: '+j.analyst_decision+'）' : '保存失败';
+    }).catch(e=>{ $('fdMsg').textContent='保存失败：'+e; });
+}
+function renderBacktest(bt){
+  const r = bt.report;
+  renderReport(r);
+  let h = '<div class="glass toolbar-card" style="padding:20px;margin-bottom:16px;border:1.5px solid var(--green)"><div class="h3" style="font-size:14px;letter-spacing:.5px;margin-bottom:12px;color:var(--green)">BACKTEST VERDICT — TAKIS</div>';
+  const cmp = bt.comparison;
+  h += '<div class="kv">';
+  h += '<div><b>AI 目标区间</b> '+cmp.ai_fair_range+'</div>';
+  h += '<div><b>AI 开价建议</b> '+cmp.ai_opening_offer+'</div>';
+  h += '<div><b>AI Walk-away</b> '+cmp.ai_walk_away+'</div>';
+  h += '<div><b>实际成交（发票）</b> '+cmp.actual_purchase_price+'</div>';
+  h += '<div><b>实际总成本（含运费+VAT）</b> '+cmp.actual_total_cost+'</div>';
+  h += '<div><b>结论</b> <b style="color:var(--green)">'+(cmp.verdict||'—')+'</b></div></div>';
+  h += '</div>';
+  $('report').insertAdjacentHTML('afterbegin', h);
+}
+
+// ================= WATCHLIST（同一 Design System） =================
+function loadWatchlist(){
+  fetch('/api/watch').then(r=>{if(!r.ok)throw Error('HTTP '+r.status);return r.json()}).then(j=>{
+    const ws = j.watches||[];
+    let h = '<div class="glass toolbar-card"><div class="h3" style="font-size:14px;letter-spacing:.5px;margin-bottom:16px">'+t('watch.create')+'</div><div class="form-grid">';
+    h += '<div class="fld"><label>'+t('watch.cat')+'</label><select id="wCat"><option value="CLASSIC_CAR">'+catLabel('CLASSIC_CAR')+'</option><option value="ART">'+catLabel('ART')+'</option><option value="DESIGN">'+catLabel('DESIGN')+'</option><option value="COLLECTIBLE">'+catLabel('COLLECTIBLE')+'</option></select></div>';
+    h += '<div class="fld"><label>'+t('watch.maker')+'</label><input autocomplete="off" id="wMaker" placeholder="Porsche"></div>';
+    h += '<div class="fld"><label>'+t('watch.target')+'</label><input autocomplete="off" id="wTarget" placeholder="964 Carrera RS N-GT"></div>';
+    h += '<div class="fld"><label>'+t('watch.kws')+'</label><input autocomplete="off" id="wKws" placeholder="N-GT, NGT, M003, Carrera RS Competition"></div>';
+    h += '<div class="fld"><label>'+t('watch.low')+'</label><input autocomplete="off" id="wLow" type="number" placeholder="200000"></div>';
+    h += '<div class="fld"><label>'+t('watch.high')+'</label><input autocomplete="off" id="wHigh" type="number" placeholder="350000"></div>';
+    h += '<div class="fld"><label>'+t('watch.freq')+'</label><select id="wFreq"><option value="MANUAL">'+t('watch.freqManual')+'</option><option value="DAILY">'+t('watch.freqDaily')+'</option><option value="WEEKLY">'+t('watch.freqWeekly')+'</option></select></div>';
+    h += '<div class="fld"><label>'+t('watch.notes')+'</label><input autocomplete="off" id="wNotes" placeholder="Only genuine N-GT / M003 cars."></div>';
+    h += '</div><div class="btnrow" style="display:flex;gap:10px;margin-top:16px;align-items:center"><button class="btn btn-p btn-sm" onclick="createWatch()" type="button">'+t('watch.createBtn')+'</button><button class="btn btn-g btn-sm" onclick="clearWatchForm()" type="button">'+t('btn.clear')+'</button><span class="mut" id="wMsg" style="font-size:12px"></span></div>';
+    h += '<p class="mut" style="margin-top:10px;font-size:11.5px">'+t('watch.schedHint')+'</p></div>';
+    h += '<div class="glass toolbar-card"><div class="h3" style="font-size:14px;letter-spacing:.5px;margin-bottom:14px">'+t('watch.title')+'</div>';
+    if(!ws.length){ h += '<p class="mut">'+t('watch.empty')+'</p>'; }
+    else{
+      h += '<div class="btnrow" style="display:flex;gap:8px;margin-bottom:10px"><button class="btn btn-g btn-sm" type="button" onclick="toggleChecks(\'watchlistMain\',true)">全选</button><button class="btn btn-g btn-sm" type="button" onclick="deleteSelectedWatches()">删除选中</button><button class="btn btn-g btn-sm" type="button" onclick="deleteAllWatches()">一键清空</button></div><div class="tablewrap"><table class="watch-table"><tr><th><input type="checkbox" onchange="toggleChecks(\'watchlistMain\',this.checked)"></th><th>'+t('watch.watch')+'</th><th>'+t('watch.target2')+'</th><th>'+t('watch.priceRange')+'</th><th>'+t('watch.lastCheck')+'</th><th>'+t('watch.changes')+'</th><th>'+t('watch.status')+'</th><th></th></tr>';
+      ws.forEach(w=>{
+        const range = (w.price_low!=null?money(w.price_low, w.currency||'EUR'):'')+'–'+(w.price_high!=null?money(w.price_high, w.currency||'EUR'):'');
+        h += '<tr><td><input type="checkbox" class="watch-check" value="'+w.id+'"></td><td><b>'+esc(w.maker)+'</b></td><td><a href="#" style="color:var(--accent-ink)" onclick="watchDetail('+w.id+');return false;">'+esc(w.target)+'</a></td>'
+          +'<td>'+range+'</td><td class="mut">'+(w.last_checked?w.last_checked.slice(0,16).replace('T',' '):'—')+'</td>'
+          +'<td>'+(w.changes_count||0)+'</td><td>'+w.status+'</td>'
+          +'<td><a href="#" style="color:var(--accent-ink)" onclick="watchDetail('+w.id+');return false;">'+t('watch.open')+'</a></td></tr>';
+      });
+      h += '</table></div>';
+    }
+    h += '</div>';
+    $('watchlistMain').innerHTML = h;
+  }).catch(e=>{ console.error('[WATCH] load failed',e); $('watchlistMain').innerHTML = '<div class="glass toolbar-card"><div class="h3">'+(LANG==='zh-CN'?'监控列表暂时无法载入':'Watchlist is temporarily unavailable')+'</div><p class="mut" style="margin:10px 0">'+(LANG==='zh-CN'?'已保存的监控不会丢失。请检查服务后重试。':'Saved watches are safe. Check the service and try again.')+'</p><button class="btn btn-p btn-sm" type="button" onclick="loadWatchlist()">'+(LANG==='zh-CN'?'重试':'Retry')+'</button></div>'; });
+}
+function clearWatchForm(){
+  ['wMaker','wTarget','wKws','wLow','wHigh','wNotes'].forEach(id=>{const e=$(id);if(e)e.value='';});
+  const c=$('wCat');if(c)c.value='ART'; const f=$('wFreq');if(f)f.value='MANUAL'; const m=$('wMsg');if(m)m.textContent='';
+}
+function deleteSelectedWatches(){ const ids=selectedValues('.watch-check'); if(!ids.length)return alert('请先勾选监控'); if(!confirm('删除选中的监控？'))return; Promise.all(ids.map(id=>fetch('/api/watch/'+id,{method:'DELETE'}))).then(()=>loadWatchlist()); }
+function deleteAllWatches(){ if(!confirm('清空全部监控？'))return; const ids=Array.from(document.querySelectorAll('.watch-check')).map(c=>c.value); if(!ids.length)return; Promise.all(ids.map(id=>fetch('/api/watch/'+id,{method:'DELETE'}))).then(()=>loadWatchlist()); }
+function createWatch(){
+  const body = {
+    category: $('wCat').value, maker: $('wMaker').value.trim(), target: $('wTarget').value.trim(),
+    keywords: $('wKws').value.trim(), price_low: $('wLow').value?parseFloat($('wLow').value):null,
+    price_high: $('wHigh').value?parseFloat($('wHigh').value):null,
+    frequency: $('wFreq').value, notes: $('wNotes').value.trim()
+  };
+  if(!body.maker || !body.target){ $('wMsg').textContent=(LANG==='zh-CN'?'品牌/艺术家 和 监控目标 必填':'Maker and Target required'); return; }
+  fetch('/api/watch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    .then(r=>r.json()).then(j=>{
+      $('wMsg').textContent='✓ '+t('watch.created')+'（#'+j.id+'）';
+      if(body.frequency!=='MANUAL') askEnableScheduler();
+      loadWatchlist();
+    }).catch(e=>{ $('wMsg').textContent=t('misc.err')+'：'+e; });
+}
+function askEnableScheduler(){
+  if(!confirm(t('watch.schedAsk')+'\n\n'+t('watch.schedAsk.sub'))) return;
+  fetch('/api/scheduler/enable',{method:'POST'}).then(r=>r.json()).then(j=>{
+    $('wMsg').textContent = j.loaded ? t('watch.schedOk') : t('watch.schedFail');
+  });
+}
+function watchDetail(wid){
+  const zh = LANG==='zh-CN';
+  fetch('/api/watch/'+wid).then(r=>r.json()).then(j=>{
+    const w = j.watch, items = j.items||[], events = j.events||[];
+    if(!w){ $('watchDetail').innerHTML='<p class="warn">'+(zh?'监控对象不存在或已被删除':'This watch no longer exists.')+'</p>'; return; }
+    let h = '<div class="glass toolbar-card">';
+    h += '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">';
+    h += '<div><div class="h3" style="font-size:18px;margin-bottom:4px">'+esc(w.maker)+' '+esc(w.target)+'</div><p class="mut" style="font-size:12px">'+w.status+' · '+(w.frequency||'MANUAL')+' · '+(w.baseline_at?t('watch.baseline')+' '+w.baseline_at.slice(0,10):t('watch.notBaseline'))+'</p></div>';
+    h += '<div style="display:flex;gap:8px">';
+    h += '<button class="btn btn-p btn-sm" onclick="checkWatch('+wid+')" type="button">'+t('watch.checkNow')+'</button>';
+    h += '<button class="btn btn-g btn-sm" onclick="'+(w.status==='PAUSED'?'resumeWatch('+wid+')':'pauseWatch('+wid+')')+'" type="button">'+(w.status==='PAUSED'?t('watch.resume'):t('watch.pause'))+'</button>';
+    h += '<button class="btn btn-g btn-sm" onclick="deleteWatch('+wid+')" type="button">'+t('watch.delete')+'</button>';
+    h += '</div></div>';
+    if(w.baseline && w.baseline.median){
+      h += '<div class="kpi-strip" style="margin-top:16px;margin-bottom:0">';
+      h += '<div class="glass kpi-card"><b>'+w.baseline.known_listings+'</b><span>'+t('watch.knownListings')+'</span></div>';
+      h += '<div class="glass kpi-card"><b>'+w.baseline.known_solds+'</b><span>'+t('watch.knownSolds')+'</span></div>';
+      h += '<div class="glass kpi-card"><b>'+money(w.baseline.median, w.currency||'EUR')+'</b><span>'+t('watch.median')+'</span></div>';
+      h += '<div class="glass kpi-card"><b>'+w.baseline.known_estimates+'</b><span>'+t('watch.estimates')+'</span></div>';
+      h += '</div>';
+    }
+    h += '<p class="mut" style="margin-top:10px;font-size:12px">'+esc(w.notes||'')+'</p></div>';
+    const byLvl = {ACTION:0, INTERESTING:0, INFO:0};
+    events.forEach(e=>{ if(byLvl[e.alert_level]!=null) byLvl[e.alert_level]++; });
+    h += '<div class="glass toolbar-card"><div class="h3" style="font-size:14px;letter-spacing:.5px;margin-bottom:14px">'+t('watch.changeSummary')+'</div>';
+    if(!events.length){ h += '<p class="mut">'+t('watch.noChange')+'</p>'; }
+    else{
+      h += '<p style="font-size:13px;margin-bottom:10px">ACTION '+byLvl.ACTION+' · INTERESTING '+byLvl.INTERESTING+' · INFO '+byLvl.INFO+'</p>';
+      h += '<div class="tablewrap"><table><tr><th>'+t('hist.date')+'</th><th>'+t('watch.changes')+'</th><th>Score</th><th>'+t('watch.alert')+'</th><th></th></tr>';
+      events.slice(0,30).forEach(e=>{
+        const item = items.find(x=>x.id===e.item_id);
+        h += '<tr><td class="mut">'+(e.created_at||'').slice(5,16).replace('T',' ')+'</td><td>'+e.event_type+'</td>'
+          +'<td>'+(e.old_value?esc(e.old_value)+' → ':'')+esc(e.new_value)+'</td>'
+          +'<td>'+(e.opportunity_score||'')+'</td><td><b>'+e.alert_level+'</b></td>'
+          +'<td>'+(item?'<a href="#" style="color:var(--accent-ink)" onclick="analyzeFromWatch('+wid+',\''+escapeJs(item.title)+'\','+item.price+');return false;">'+t('btn.analyze')+'</a>':'')+'</td></tr>';
+      });
+      h += '</table></div>';
+    }
+    h += '</div>';
+    h += '<div class="glass toolbar-card"><div class="h3" style="font-size:14px;letter-spacing:.5px;margin-bottom:14px">'+t('watch.tracked')+' ('+items.length+')</div>';
+    if(items.length){
+      h += '<div class="tablewrap"><table><tr><th>'+t('hist.object')+'</th><th>'+t('scout.asking')+'</th><th>'+t('watch.changes')+'</th><th>'+t('watch.firstSeen')+'</th><th>Score</th><th>'+t('watch.alert')+'</th></tr>';
+      items.forEach(it=>{
+        h += '<tr><td>'+esc(String(it.title).slice(0,60))+'</td><td>'+(it.price!=null?money(it.price, it.currency||'EUR'):'—')+'</td>'
+          +'<td>'+it.sale_type+'</td><td class="mut">'+(it.first_seen||'').slice(5,16).replace('T',' ')+'</td>'
+          +'<td>'+(it.opportunity_score||0)+'</td><td>'+(it.alert_level||'')+'</td></tr>';
+      });
+      h += '</table></div>';
+    } else { h += '<p class="mut">'+(zh?'还没有跟踪到对象。':'No tracked objects yet.')+'</p>'; }
+    h += '</div>';
+    $('watchlistMain').innerHTML = h;
+  }).catch(e=>{ $('watchlistMain').innerHTML = '<p class="warn">'+t('misc.err')+'：'+e+'</p>'; });
+}
+function escapeJs(s){ return (s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+function checkWatch(wid){
+  fetch('/api/watch/'+wid+'/check',{method:'POST'}).then(r=>r.json()).then(j=>{
+    if(j.error){ alert(j.error); return; }
+    const eventCount = Number.isFinite(Number(j.event_count))
+      ? Number(j.event_count)
+      : (Array.isArray(j.events) ? j.events.length : Number(j.events)||0);
+    alert((LANG==='zh-CN'?'检查完成：':'Check complete: ')+j.mode+' · '+eventCount+' '+(LANG==='zh-CN'?'个变化':'changes')+' · '+(Number(j.action_alerts)||0)+' ACTION（'+(Number(j.duration_ms)||0)+'ms）');
+    watchDetail(wid);
+  }).catch(e=>alert(t('misc.err')+'：'+e));
+}
+function pauseWatch(wid){ fetch('/api/watch/'+wid+'/pause',{method:'POST'}).then(()=>watchDetail(wid)); }
+function resumeWatch(wid){ fetch('/api/watch/'+wid+'/resume',{method:'POST'}).then(()=>watchDetail(wid)); }
+function deleteWatch(wid){
+  if(!confirm(t('watch.deleteConfirm'))) return;
+  fetch('/api/watch/'+wid,{method:'DELETE'}).then(()=>loadWatchlist());
+}
+function analyzeFromWatch(wid, title, price){
+  gotoPage('analyst');
+  const tt = title.replace(/&quot;/g,'"');
+  $('artist').value = 'Porsche';
+  $('artwork').value = tt;
+  if(price) $('price').value = price;
+  $('research').checked = true;
+  window.scrollTo(0,0);
+}
+function analyzeMonitorFinding(wid,title,price){
+  analyzeFromWatch(wid,title,price);
+}
+function openMonitorWatch(wid){
+  gotoPage('watch');
+  setTimeout(()=>watchDetail(wid),50);
+}
+function watchThisMarket(){
+  const r = ACTIVE_REPORT;
+  if(!r || !r.input){ alert('该报告未持久化，无法创建 Watch'); return; }
+  const inp = r.input||{};
+  const body = {
+    category: inp.category||'ART', maker: inp.artist||'', target: inp.artwork||'',
+    keywords: '', price_low: null, price_high: inp.asking_price?inp.asking_price*1.3:null,
+    currency: inp.currency||'EUR', frequency: 'MANUAL',
+    notes: '从 Report #'+(r.id||'')+' 一键创建'
+  };
+  fetch('/api/watch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    .then(r=>r.json()).then(j=>{
+      alert('✓ 已加入 Watchlist（Watch #'+j.id+'）');
+    }).catch(e=>alert('创建失败：'+e));
+}
+
+// ================= SCOUT（母版 Opportunity Card + 四态 + Daily Brief） =================
+function loadScout(){
+  return fetch('/api/scout/today').then(r=>r.json()).then(j=>{
+    const q = $('scoutQuery');
+    if(q && !q.value && j.parse_info && j.parse_info.interests) q.value = j.parse_info.interests;
+    $('scoutMain').innerHTML = renderScout(j);
+  }).catch(e=>{ $('scoutMain').innerHTML = '<p class="warn">'+t('misc.err')+'：'+e+'</p>'; });
+}
+
+function oppImgHTML(c){
+  const label = esc(c.object||'—');
+  if(c.image_url && c.image_status!=='failed'){
+    return '<div class="opp-media"><img src="'+esc(c.image_url)+'" alt="'+label+'" loading="lazy" onerror="this.parentNode.classList.add(\'img-fail\');this.outerHTML=\'<span class=ph>'+t('opp.image.failed')+'</span>\'"/></div>';
+  }
+  if(c.image_status==='failed'){
+    return '<div class="opp-media"><span class="ph" style="color:var(--red)">'+t('opp.image.failed')+'</span></div>';
+  }
+  return '<div class="opp-media"><span class="ph">'+label+'</span></div>';
+}
+
+function renderScout(j){
+  ACTIVE_SCOUT = j;
+  const zh = LANG==='zh-CN';
+  const run = j.run||{};
+  const state = j.state || (j.run ? (j.run.status||'COMPLETED') : 'NOT_RUN');
+  const brief = j.brief || null;
+  const near = j.near_misses || [];
+  let h = '';
+
+  // 先生成监控新发现模块，最后再追加到首页底部；设计与交互保持不变。
+  const updates = (j.monitor_updates||[]).filter(x=>x.event_type && x.event_type!=='REMOVED').slice(0,6);
+  let monitorHtml = '';
+  {
+    monitorHtml += '<div class="section-head"><div class="h2">'+(zh?'监控新发现':'NEW MONITOR FINDINGS')+' <span class="badge gold">'+updates.length+'</span></div><span class="mut" style="font-size:12px">'+(zh?'后台每 08:00 / 20:00 更新':'Updated at 08:00 / 20:00')+'</span></div>';
+    monitorHtml += '<div class="glass monitor-brief"><div class="brief-head"><b>'+(zh?'今日监控更新':'Today’s monitor updates')+'</b><span class="mut">'+(zh?'新挂牌、新成交和价格变化会在下一次巡检后显示':'New listings, sold records and price changes appear after the next scheduled scan')+'</span></div><div class="monitor-list">';
+    const shown = updates.length ? updates : [
+      {event_type:'NEW_LISTING', title:zh?'暂无新挂牌':'No new listings', target:zh?'等待 08:00 / 20:00 自动巡检':'Waiting for the 08:00 / 20:00 scan'},
+      {event_type:'NEW_SOLD', title:zh?'暂无新成交':'No new sold records', target:zh?'等待 08:00 / 20:00 自动巡检':'Waiting for the 08:00 / 20:00 scan'}
+    ];
+    shown.forEach(x=>{
+      const labels={NEW_LISTING:zh?'新挂牌':'NEW LISTING',NEW_SOLD:zh?'新成交':'NEW SALE',PRICE_DROP:zh?'降价':'PRICE DROP',PRICE_INCREASE:zh?'涨价':'PRICE INCREASE'};
+      const val=x.new_value||((x.price!=null)?money(x.price,x.currency):'');
+      const actions=x.id?'<span style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-p btn-sm" type="button" onclick="analyzeMonitorFinding('+Number(x.watch_id||0)+',\''+escapeJs(x.title||'')+'\','+Number(x.price||0)+')">'+(zh?'深度分析':'Analyze')+'</button>'+(x.watch_id?'<button class="btn btn-g btn-sm" type="button" onclick="openMonitorWatch('+Number(x.watch_id)+')">'+(zh?'打开监控':'Open watch')+'</button>':'')+'</span>':'';
+      monitorHtml += '<div class="monitor-row"><span class="event badge '+(x.alert_level==='ACTION'?'gold':'amber')+'">'+(labels[x.event_type]||x.event_type)+'</span><div class="item"><b>'+esc(x.title)+'</b><small>'+esc(x.target||'')+' · '+esc((x.created_at||'').replace('T',' ').slice(0,16))+'</small></div><div class="value">'+esc(val)+(x.source_url?'<a href="'+esc(x.source_url)+'" target="_blank" rel="noopener">'+(zh?'查看来源 ↗':'Source ↗')+'</a>':'')+actions+'</div></div>';
+    });
+    monitorHtml += '</div></div>';
+  }
+
+  // 母版时间格式：2026.08.29 · 09:34
+  function fmtBriefTime(ts){
+    if(!ts) return '';
+    const t = String(ts).replace('T',' ').replace(/[-:]/g,'.').replace(/\s+/,' · ');
+    return t.slice(0, 18);
+  }
+
+  // 今日机会（母版 hasOpp / 四态）
+  if(state==='NOT_RUN' || state==='PENDING' || state==='FAILED'){
+    h += '<div class="solid empty">';
+    h += '<div class="ring">◌</div>';
+    if(state==='FAILED'){
+      h += '<h3>'+t('state.FAILED')+'</h3><p>'+t('state.FAILED.sub')+'</p>';
+    } else if(state==='PENDING'){
+      h += '<h3>'+t('state.PENDING')+'</h3><p>'+t('state.PENDING.sub')+'</p>';
+      if(j.parse_info && j.parse_info.error) h += '<p class="warn" style="margin-top:4px">'+esc(j.parse_info.error)+'</p>';
+    } else {
+      h += '<h3>'+t('state.NOT_RUN')+'</h3><p>'+t('state.NOT_RUN.sub')+'</p>';
+    }
+    h += '</div>';
+  }
+  else if(j.top && j.top.length){
+    h += '<div class="section-head"><div class="h2">'+t('scout.section.today')+' <span class="badge gold">'+j.top.length+' '+t('scout.worth')+'</span></div>';
+    h += '<span class="mut" style="font-size:12px">'+(run.started_at||'').slice(5,16).replace('T',' ')+' · '+(brief.queries||0)+' '+t('brief.queries')+' · '+(brief.records||0)+' '+t('brief.records')+'</span></div>';
+    h += '<div class="opp-grid">';
+    j.top.forEach(c=>{
+      // alert_level 派生：score ≥80 ACTION（蓝顶边·新挂牌），≥60 INTERESTING（绿·新成交），其余 INFO
+      // 真有 c.alert_level 时优先用后端值
+      const lvl = c.alert_level || (c.scout_score >= 80 ? 'ACTION' : c.scout_score >= 60 ? 'INTERESTING' : 'INFO');
+      const kind = lvl==='INTERESTING' ? 'interest' : 'action';
+      const labelKind = lvl==='INTERESTING' ? t('opp.interesting') : t('opp.newListing');
+      h += '<div class="glass opp-card '+kind+'">';
+      h += '<div class="opp-media">';
+      h += '<span class="tag-pos"><span class="badge '+(kind==='interest'?'amber':'gold')+'">'+t('opp.action')+' · '+labelKind+'</span></span>';
+      h += oppImgHTML(c);
+      h += '<span class="score-pos"><span class="score-chip"><b>'+(c.scout_score||0)+'</b><span>SCOUT SCORE</span></span></span>';
+      h += '</div>';
+      h += '<div class="opp-body">';
+      h += '<div class="opp-title">'+esc(c.object||'—')+'</div>';
+      const curr = c.currency||'€';
+      const pr = c.asking_price!=null ? curr+Number(c.asking_price).toLocaleString() : '—';
+      h += '<div class="opp-price">'+pr+'<small>'+ (c.source_name?esc(c.source_name):'') + (c.seller?' · '+esc(c.seller):'') +'</small></div>';
+      h += '<ul class="opp-why">';
+      h += '<li class="lbl">'+t('opp.why.bullets')+'</li>';
+      const notes = (c.notes||'').split('; ').filter(Boolean);
+      if(!notes.length) notes.push(zh?'与你的收藏方向相关':'Relevant to your profile');
+      notes.slice(0,4).forEach(n=>{ h += '<li>'+esc(n)+'</li>'; });
+      h += '</ul>';
+      h += '<div class="opp-actions">';
+      h += '<button class="btn btn-p btn-sm" onclick="scoutAnalyze('+c.id+')" type="button">'+t('btn.analyze')+'</button>';
+      h += '<button class="btn btn-g btn-sm" onclick="scoutWatch('+c.id+')" type="button">'+t('btn.watch')+'</button>';
+      h += '<button class="btn btn-g btn-sm" onclick="scoutFeedback('+c.id+',\'INTERESTED\')" type="button">'+t('btn.interest')+'</button>';
+      h += '<button class="btn btn-g btn-sm" onclick="scoutFeedback('+c.id+',\'NOT_INTERESTED\')" type="button">'+t('btn.notInterest')+'</button>';
+      h += '</div>';
+      h += '</div>';
+      h += '<p class="mut" id="fbMsg'+c.id+'" style="margin:0 20px 14px;font-size:12px"></p>';
+      h += '</div>';
+    });
+    h += '</div>';
+  }
+  else if(near && near.length){
+    h += '<div class="solid scout-empty">';
+    h += '<div class="empty-copy"><span class="empty-kicker">SCOUT · 本轮结论</span>';
+    h += '<h3>'+t('brief.conclusion.near_miss').replace('{subject}', brief.subject?' '+brief.subject:'')+'</h3>';
+    h += '<p>'+t('brief.advice')+'</p>';
+    h += '<div class="empty-reason"><b>'+(zh?'为什么暂未推荐':'Why not recommended')+'</b><span>'+(zh?'已有候选，但价格优势、来源或证据完整度尚未同时达标。':'Candidates were found, but price advantage, source quality and evidence are not all strong enough yet.')+'</span></div></div>';
+    h += '<div class="funnel">';
+    [['brief.queries',brief.queries||0],['brief.records',brief.records||0],['brief.candidates',brief.candidates||0],['brief.recommended',brief.recommended||0]]
+      .forEach(([k,v],i)=>{ h += '<button class="metric-mini" type="button" onclick="openScoutMetric('+i+')"><b>'+v+'</b><span>'+t(k)+'</span></button>'; });
+    h += '</div>';
+    h += '</div>';
+  }
+  else {
+    h += '<div class="solid scout-empty">';
+    const subjectLabel = (brief && brief.subject) ? ' '+esc(brief.subject) : '';
+    h += '<div class="empty-copy"><span class="empty-kicker">SCOUT · 本轮结论</span>';
+    h += '<h3>'+(zh?'暂未发现值得立即行动的'+subjectLabel+'。':t('brief.conclusion.empty_scan'))+'</h3>';
+    h += '<p>'+t('brief.advice')+'</p>';
+    h += '<div class="empty-reason"><b>'+(zh?'为什么没有推荐':'Why no recommendation')+'</b><span>'+(zh?'本轮候选没有同时通过目标匹配、来源质量、证据完整和价格优势四项检查。':'No candidate passed all four checks: target match, source quality, evidence completeness and price advantage.')+'</span></div></div>';
+    h += '<div class="funnel">';
+    [['brief.queries',brief.queries||0],['brief.records',brief.records||0],['brief.candidates',brief.candidates||0],['brief.recommended',brief.recommended||0]]
+      .forEach(([k,v],i)=>{ h += '<button class="metric-mini" type="button" onclick="openScoutMetric('+i+')"><b>'+v+'</b><span>'+t(k)+'</span></button>'; });
+    h += '</div>';
+    h += '</div>';
+  }
+
+  // 首页固定显示跨拍卖行的三年均价与最近成交价，并允许逐条核对来源。
+  const ms=j.market_summary||{};
+  h += '<div class="glass market-card"><div class="market-kicker">'+(zh?'此标的 3 年价格参考':'3-YEAR PRICE REFERENCE FOR THIS SUBJECT')+'</div><div class="market-scope">'+esc((brief&&brief.subject)||((j.parse_info||{}).model)||((j.parse_info||{}).series)||'—')+'</div>';
+  if(ms.available){
+    h += '<div class="market-scope" style="margin-top:5px">'+(zh?'跨拍卖行真实成交对比 · '+esc(ms.scope||'同款直接拍卖成交'):'Cross-auction verified results · Same maker, model family, generation and comparable specification')+'</div>';
+    h += '<div class="market-price-grid"><div class="market-price-box"><div class="market-price-label">'+(zh?'过去三年平均成交价':'3-YEAR AVERAGE SOLD PRICE')+'</div><div class="market-price">'+money(ms.three_year_average_price||ms.average_sold_price,ms.currency||'EUR')+'</div><div class="market-price-note">'+esc(ms.period_start||'')+' – '+esc(ms.period_end||'')+' · '+ms.sample_count+(zh?' 条成交':' sold lots')+'</div></div>';
+    h += '<div class="market-price-box latest"><div class="market-price-label">'+(zh?'最近一次拍卖成交价':'LATEST AUCTION SOLD PRICE')+'</div><div class="market-price">'+money(ms.latest_sold_price,ms.latest_currency||ms.currency||'EUR')+'</div><div class="market-price-note">'+esc(ms.latest_sold_at||'')+' · '+esc((ms.latest_record||{}).auction_house||'')+' · Lot '+esc((ms.latest_record||{}).lot||'—')+'</div></div></div>';
+    const rangeBasis = ms.currency==='EUR' ? (zh?'三年成交区间（统一欧元）':'3-year range in EUR') : (zh?'三年成交区间（同币种 '+esc(ms.currency)+'）':'3-year range in '+esc(ms.currency));
+    h += '<div class="market-stats" style="margin-top:10px;min-width:0"><div class="market-stat"><b>'+ms.sample_count+'</b><span>'+(zh?'合格成交样本':'qualified sold lots')+'</span></div><div class="market-stat"><b>'+ms.source_count+'</b><span>'+(zh?'独立拍卖来源':'independent auction sources')+'</span></div><div class="market-stat"><b>'+money(ms.low_sold_price,ms.currency)+' – '+money(ms.high_sold_price,ms.currency)+'</b><span>'+rangeBasis+'</span></div></div>';
+    h += '<div class="market-audit"><span>'+(zh?'算术平均':'Mean')+' <b>'+money(ms.three_year_average_price,ms.currency)+'</b></span><span>'+(zh?'中位数':'Median')+' <b>'+money(ms.median_sold_price,ms.currency)+'</b></span><span>'+(zh?'均值/中位数偏差':'Mean/median gap')+' <b>'+Number(ms.mean_median_gap_pct||0).toFixed(1)+'%</b></span><span>'+(zh?'统计门槛':'Threshold')+' <b>N≥'+(ms.minimum_samples||5)+' · '+(ms.minimum_sources||2)+(zh?' 个来源':' sources')+'</b></span></div>';
+    if(ms.sample_status==='INSUFFICIENT' || ms.sample_status==='PROVISIONAL') h += '<div class="market-warning">'+(ms.method==='CROSS_SOURCE_SOLD_RECORDS_SAME_CURRENCY_3Y'?(zh?'暂定样本：成交价与成交日期已由拍卖方页面核验；当前仅 3 条、2 个来源，建议结合中位数和逐条记录判断。':'Provisional sample: sold prices and dates are verified on auction sources; with 3 lots from 2 sources, use the median and individual records together.'):(zh?'样本仍需核验：均价基于当前可识别的 SOLD 记录，显示样本量与逐条来源；成交日期或汇率缺失时按抓取时间观察。':'Provisional sample: average uses identifiable SOLD records with sample size and source links; missing sale dates or FX are marked as observed time.'))+'</div>';
+    if(Number(ms.mean_median_gap_pct||0)>=25) h += '<div class="market-warning">'+(zh?'均价受到高低价差影响较大，请优先结合中位数和逐条成交记录判断。':'The mean is materially affected by dispersion; use the median and individual records together.')+'</div>';
+    const methodCopy = ms.method==='CROSS_SOURCE_SOLD_RECORDS_SAME_CURRENCY_3Y'
+      ? (zh?'口径：仅收同代 Range Rover L322 的拍卖方公开 SOLD / Winning bid；排除普通挂牌、估价、价格指南及其他代车型。':'Scope: auction-source SOLD / Winning bid records for the Range Rover L322 generation only; listings, estimates, price guides and other generations are excluded.')
+      : ms.method==='OBSERVED_SOLD_RECORDS_DOMINANT_CURRENCY_3Y'
+        ? (zh?'口径：按搜索结果中标注 SOLD 的记录统计，优先采用同一币种；缺失成交日期时使用抓取时间并明确标注。':'Scope: SOLD-labelled records from this search, using the dominant currency; missing sale dates use observed time and are explicitly marked.')
+        : (zh?'口径：只收单灯、开放版、约 195–220 cm 的 Signal；排除双灯、组合装置、独件作品、挂牌价和估价。':'Scope: single-light, open-edition Signals around 195–220 cm only; double signals, installations, unique works, asking prices and estimates are excluded.');
+    h += '<div class="market-method">'+methodCopy+(zh&&ms.price_basis?' · '+esc(ms.price_basis):'')+' · '+(zh?'来源：':'Sources: ')+esc((ms.source_names||[]).join(zh?'、':', '))+'</div>';
+    if(ms.records&&ms.records.length){
+      h += '<details class="market-records"><summary>'+(zh?'查看 '+ms.records.length+' 条成交、汇率与原始页面':'View '+ms.records.length+' sold lots, FX and source pages')+' ＋</summary><div class="market-record-list">';
+      [...ms.records].sort((a,b)=>String(b.sold_at).localeCompare(String(a.sold_at))).forEach(x=>{
+        const converted = x.currency==='USD' ? (zh?'折合 '+money(x.normalized_eur,'EUR')+' · ECB '+x.fx_usd_per_eur:'Converted '+money(x.normalized_eur,'EUR')+' · ECB '+x.fx_usd_per_eur) : (zh?'原币计价':'Original currency');
+        h += '<div class="market-record"><a href="'+esc(x.source_url)+'" target="_blank" rel="noopener">'+esc(x.title)+' ↗</a><span>'+esc(x.auction_house||x.source_name)+' · '+esc(x.sold_at)+' · Lot '+esc(x.lot||'—')+'</span><b>'+money(x.price,x.currency||ms.currency)+'</b><span>'+converted+'</span></div>';
+      });
+      h += '</div></details>';
+    }
+  }
+  else {
+    const reason = ms.reason||'';
+    const msg = reason==='SUBJECT_TOO_BROAD'
+      ? (zh?'当前搜索词过宽，无法区分普通 Signal 灯具、不同系列与高价独件作品。请加入系列号、编号或尺寸；系统不会再用单条高价记录冒充均价。':'The search is too broad to distinguish standard Signal lamps, series variants and high-value unique works. Add a series number, edition number or dimensions.')
+      : reason==='INSUFFICIENT_CROSS_SOURCE_SOLD_RECORDS'
+        ? (zh?'可识别成交不足：必须至少有 3 条明确 SOLD 记录，并来自至少 2 个独立拍卖网站；单条高价记录不会生成均价。':'Insufficient cross-source evidence: at least 3 explicit SOLD records from 2 independent auction sites are required; a single high number never becomes an average.')
+      : reason==='PRICE_DISPERSION'
+        ? (zh?'成交价格彼此冲突，可能混入不同版本；暂不计算均价。':'Sold prices conflict, suggesting mixed variants; no average is calculated.')
+        : (zh?'当前没有可识别的 SOLD 成交记录，暂时无法计算均价；请查看下方候选来源。':'No identifiable SOLD records were found, so an average cannot be calculated yet; review candidate sources below.');
+    h += '<div class="market-kicker">'+(zh?'拍卖成交均价':'AUCTION AVERAGE')+'</div><div style="font-size:20px;font-weight:700;margin-top:8px">'+(zh?'正在补充成交依据':'Collecting verified sold records')+'</div><div class="mut" style="margin-top:7px">'+msg+'</div>';
+  }
+  h += '</div>';
+
+  // Current purchase availability is separate from historical sold evidence.
+  const listings=ms.purchase_listings||[];
+  h += '<div class="glass buy-card"><div class="buy-head"><h3>'+(zh?'当前可购买':'AVAILABLE NOW')+'</h3><span>'+(zh?'仅显示本轮发现的明确挂牌详情页':'Only verified asking pages from this scan')+'</span></div>';
+  if(listings.length){
+    h += '<div class="buy-list">';
+    listings.forEach(x=>{ h += '<div class="buy-row"><div><b>'+esc(x.title||'—')+'</b><small>'+esc(x.seller||'')+' · '+esc(x.checked_at||'')+(zh?' 核验':' checked')+'</small></div><div class="buy-price">'+money(x.price,x.currency||'EUR')+'</div><a class="btn btn-p btn-sm" href="'+esc(x.source_url)+'" target="_blank" rel="noopener">'+(zh?'查看购买页 ↗':'Open listing ↗')+'</a></div>'; });
+    h += '</div>';
+  } else {
+    h += '<div class="buy-empty"><b>'+(zh?'暂无可验证在售':'No verified listing available')+'</b><span>'+(zh?'没有就是没有。历史成交页、估价页和无明确价格的页面不会伪装成购买入口。':'Sold archives, estimates and pages without a clear asking price are never presented as purchase links.')+'</span></div>';
+  }
+  h += '</div>';
+
+  // Daily Brief（母版 brief 卡，真实数据）—— 今日机会之后
+  if(brief && state==='COMPLETED'){
+    h += '<div class="section-head"><div class="h2">'+t('scout.section.brief')+'</div><span class="mut" style="font-size:12px">Daily Brief · '+t('scout.brief.clean')+'</span></div>';
+    h += '<div class="glass brief">';
+    h += '<div class="brief-head"><div style="display:flex;align-items:center;gap:10px"><span class="dot green breath"></span><b style="font-size:14px;letter-spacing:.5px">SCOUT '+t('scout.section.brief')+'</b></div>';
+    h += '<span class="mut" style="font-size:11.5px">'+fmtBriefTime(run.started_at)+'</span></div>';
+    h += '<div class="brief-body">';
+    h += '<div class="brief-nums">';
+    const nums = [
+      [brief.queries||0, t('brief.queries')],
+      [brief.records||0, t('brief.records')],
+      [brief.candidates||0, t('brief.candidates')],
+      [brief.recommended||0, t('brief.recommended')]
+    ];
+    nums.forEach(([n,l],i)=>{ h += '<button type="button" class="solid brief-num metric" onclick="openScoutMetric('+i+')"><b class="num" '+(i===3?'style="color:var(--accent-ink)"':'')+'>'+n+'</b><span>'+l+'</span></button>'; });
+    h += '</div>';
+    const ck = brief.conclusion_key || (brief.recommended>0?'found':brief.candidates>0?'near_miss':'empty_scan');
+    const subject = brief.subject ? ' '+brief.subject : '';
+    if(ck==='found'){
+      h += '<p class="brief-concl">'+(zh?'结论：':'Conclusion: ')+t('brief.conclusion.found').replace('{n}', '<span style="color:var(--accent-ink)">'+ (brief.recommended||0) +'</span>') +'</p>';
+    } else if(ck==='near_miss'){
+      h += '<p class="brief-concl">结论：'+t('brief.conclusion.near_miss').replace('{subject}', subject)+'</p>';
+    } else {
+      h += '<p class="brief-concl">结论：'+t('brief.conclusion.empty_scan')+'</p>';
+    }
+    // Near Miss（母版 nearmiss 行）
+    if(near && near.length){
+      h += '<div class="nearmiss">';
+      near.slice(0,3).forEach(c=>{
+        const whyText = (c.why_not||[]).map(x=>zh?(x.zh||x.en):(x.en||x.zh)).filter(Boolean).join('；');
+        h += '<div class="solid nm-row"><div class="t"><b>'+esc(c.object)+'</b><span>'+ (c.source_name?esc(c.source_name):'') + (whyText?' · '+esc(whyText).slice(0,60):'') +'</span></div>'
+          + '<span class="badge gray">'+t('brief.near.notRecommended')+'</span><span class="s num">'+(c.scout_score||0)+'</span></div>';
+      });
+      h += '</div>';
+    }
+    if(ck==='near_miss' || ck==='empty_scan'){
+      h += '<p class="brief-adv"><b style="color:var(--accent-ink)">'+t('brief.advice')+'</b></p>';
+    }
+    h += '</div></div>';
+  }
+
+  h += monitorHtml;
+  return h;
+}
+
+function openScoutMetric(index){
+  const j=ACTIVE_SCOUT||{}, run=j.run||{}, brief=j.brief||{}, zh=LANG==='zh-CN';
+  const titles=zh?['已执行市场搜索','发现市场记录','初步候选','最终推荐']:['Searches executed','Market records found','Initial candidates','Final recommendations'];
+  let h='';
+  if(index===0){
+    const plan=j.search_plan||[];
+    h=plan.length?'<div class="metric-list">'+plan.map((q,i)=>'<div class="metric-row"><b>'+(i+1)+'. '+esc(q)+'</b><span>'+(zh?'用于本轮市场检索':'Used in this market scan')+'</span></div>').join('')+'</div>'
+      : '<p class="mut" style="margin-top:14px">'+(zh?'本轮没有可显示的搜索策略。':'No search plan is available for this run.')+'</p>';
+  } else if(index===1){
+    const rows=zh?
+      [['发现记录',brief.records||run.results_raw||0],['重复记录',run.duplicates_removed||0],['已知对象',run.known_removed||0],['与目标不匹配',run.profile_removed||0],['来源质量不足',run.source_removed||0],['证据或分数不足',run.weak_removed||0]]:
+      [['Records found',brief.records||run.results_raw||0],['Duplicates',run.duplicates_removed||0],['Already known',run.known_removed||0],['Target mismatch',run.profile_removed||0],['Source quality filtered',run.source_removed||0],['Weak evidence or score',run.weak_removed||0]];
+    h='<div class="metric-list">'+rows.map(x=>'<div class="metric-row"><b>'+esc(x[0])+' · '+x[1]+'</b></div>').join('')+'</div>';
+    const foundLinks=(j.candidates||[]).filter(c=>c.source_url);
+    if(foundLinks.length) h+='<div class="metric-list"><div class="metric-row"><b>'+(zh?'相关来源链接':'Related source links')+'</b>'+foundLinks.slice(0,12).map(c=>'<a href="'+esc(c.source_url)+'" target="_blank" rel="noopener" style="display:block;color:var(--accent-ink);margin-top:7px">'+esc(c.source_name||c.object||c.source_url)+'</a>').join('')+'</div></div>';
+  } else if(index===2){
+    const cs=j.candidates||[];
+    h=cs.length?'<div class="metric-list">'+cs.map(c=>'<div class="metric-row"><b>'+esc(c.object||'—')+' · '+(c.scout_score||0)+'</b><span>'+esc(c.notes|| (zh?'低于推荐门槛':'Below recommendation threshold'))+'</span>'+(c.source_url?'<a href="'+esc(c.source_url)+'" target="_blank" rel="noopener" style="display:block;color:var(--accent-ink);margin-top:6px">'+(zh?'打开来源':'Open source')+' ↗</a>':'')+'</div>').join('')+'</div>'
+      : '<p class="mut" style="margin-top:14px">'+(zh?'本轮没有保留下来的初步候选。':'No initial candidates were retained.')+'</p>';
+  } else {
+    const top=j.top||[];
+    h=top.length?'<div class="metric-list">'+top.map(c=>'<div class="metric-row"><b>'+esc(c.object||'—')+' · '+(c.scout_score||0)+'</b><span>'+esc(c.notes||'')+'</span>'+(c.source_url?'<a href="'+esc(c.source_url)+'" target="_blank" rel="noopener" style="display:block;color:var(--accent-ink);margin-top:6px">'+(zh?'打开来源':'Open source')+' ↗</a>':'')+'</div>').join('')+'</div>'
+      : '<div class="metric-row" style="margin-top:14px"><b>'+(zh?'本轮没有达到推荐标准':'No candidate met the recommendation standard')+'</b><span>'+(zh?'最终推荐要求 SCOUT SCORE ≥ 55，并通过目标匹配、来源质量和证据检查。':'Final recommendations require SCOUT SCORE ≥ 55 plus target, source-quality and evidence checks.')+'</span></div>';
+  }
+  $('scoutMetricTitle').textContent=titles[index]||titles[0];
+  $('scoutMetricBody').innerHTML=h;
+  $('scoutMetricModal').style.display='flex';
+}
+function closeScoutMetric(){ $('scoutMetricModal').style.display='none'; }
+
+function renderScoutProfile(){
+  const zh = LANG==='zh-CN';
+  let h = '<div class="section-head"><div class="h2" style="font-size:18px">'+t('sp.title')+'</div></div>';
+  h += '<div class="glass toolbar-card" id="spBody" style="padding:20px"><p class="mut">'+t('misc.loading')+'…</p></div>';
+  setTimeout(()=>{
+    fetch('/api/scout/profile').then(r=>r.json()).then(j=>{
+      const p = j.profile || {};
+      const sug = j.suggestions || {};
+      const cats = p.categories || ['ART'];
+      const catKeys = ['ART','CLASSIC_CAR','DESIGN','COLLECTIBLE'];
+      const seeds = p.generated_seeds || {};
+      let b = '<div class="form-grid">';
+      b += '<div class="fld wide"><label>'+t('sp.categories')+'</label><div class="chkrow" style="display:flex;gap:10px;flex-wrap:wrap">';
+      catKeys.forEach((k,i)=>{
+        b += '<label style="display:flex;align-items:center;gap:6px;border:1px solid var(--line-strong);border-radius:10px;padding:8px 12px;cursor:pointer;font-size:13px;color:var(--ink-2)"><input type="checkbox" data-cat="'+i+'" '+(cats.includes(k)?'checked':'')+' style="accent-color:var(--accent)"> '+catLabel(k)+'</label>';
+      });
+      b += '</div></div>';
+      b += '<div class="fld"><label>'+t('sp.budget')+'</label><select id="spCur" style="width:100%"><option>EUR</option><option>USD</option><option>GBP</option><option>CNY</option></select></div>';
+      b += '<div class="fld"><label>'+t('sp.budgetLow')+'</label><input autocomplete="off" id="spLow" type="number" placeholder="'+(zh?'最低':'Min')+'" value="'+(p.budget_low||'')+'"></div>';
+      b += '<div class="fld"><label>'+t('sp.budgetHigh')+'</label><input autocomplete="off" id="spHigh" type="number" placeholder="'+(zh?'最高':'Max')+'" value="'+(p.budget_high||'')+'"></div>';
+      b += '<div class="fld"><label>'+t('sp.interests')+'</label><textarea id="spInterests" style="min-height:64px" placeholder="'+t('sp.interests.ph')+'">'+(p.interests||'').replace(/"/g,'&quot;')+'</textarea></div>';
+      b += '<div class="fld"><label>'+t('sp.avoid')+'</label><input autocomplete="off" id="spAvoid" value="'+(p.avoid||'').replace(/"/g,'&quot;')+'" placeholder="'+t('sp.avoid.ph')+'"></div>';
+      b += '<div class="fld wide"><details><summary style="cursor:pointer;color:var(--mut);font-size:12.5px;font-weight:600">'+t('sp.advanced')+'</summary>';
+      b += '<p class="mut" style="font-size:11.5px;margin-top:6px">'+t('sp.advanced.sub')+'</p>';
+      b += '<div class="form-grid" style="margin-top:8px">';
+      b += '<div class="fld"><label>'+t('sp.artists')+'</label><input autocomplete="off" id="spArtists" value="'+(p.seeds_artists||(seeds.artists||[]).join(', '))+'" placeholder="Takis, Calder"></div>';
+      b += '<div class="fld"><label>'+t('sp.models')+'</label><input autocomplete="off" id="spModels" value="'+(p.seeds_models||(seeds.models||[]).join(', '))+'" placeholder="964 Carrera RS N-GT"></div>';
+      b += '<div class="fld wide"><label>'+t('sp.keywords')+'</label><input autocomplete="off" id="spKws" value="'+(p.seeds_keywords||(seeds.keywords||[]).join(', '))+'" placeholder="estate, no reserve, single owner"></div>';
+      b += '</div></details></div>';
+      b += '</div>';
+      if(sug.suggested_artists && sug.suggested_artists.length){
+        b += '<p class="mut" style="margin-top:10px;font-size:12px">'+t('scout.suggest')+'：'+(zh?'艺术家 ':'Artists ')+sug.suggested_artists.join(', ')+
+             (sug.suggested_models&&sug.suggested_models.length?' · '+(zh?'车型 ':'Models ')+sug.suggested_models.join(', '):'')+'</p>';
+      }
+      b += '<div class="btnrow" style="display:flex;gap:10px;margin-top:16px;align-items:center"><button class="btn btn-p btn-sm" onclick="saveScoutProfile()" type="button">'+t('sp.save')+'</button><span class="mut" id="spMsg" style="font-size:12px"></span></div>';
+      b += '<div id="spConfirm" style="margin-top:14px"></div>';
+      $('spBody').innerHTML = b;
+      const curEl = $('spCur'); if(curEl) curEl.value = p.currency || 'EUR';
+    });
+  }, 0);
+  return h;
+}
+function saveScoutProfile(){
+  const catKeys = ['ART','CLASSIC_CAR','DESIGN','COLLECTIBLE'];
+  const cats = [];
+  document.querySelectorAll('#spBody [data-cat]').forEach(c=>{ if(c.checked) cats.push(catKeys[parseInt(c.dataset.cat)]); });
+  const body = {
+    categories: cats.length ? cats : ['ART'],
+    budget_low: $('spLow').value?parseFloat($('spLow').value):null,
+    budget_high: $('spHigh').value?parseFloat($('spHigh').value):null,
+    currency: ($('spCur')||{}).value || 'EUR',
+    seeds_artists: $('spArtists')?$('spArtists').value:'',
+    seeds_models: $('spModels')?$('spModels').value:'',
+    seeds_keywords: $('spKws')?$('spKws').value:'',
+    interests: $('spInterests').value, avoid: $('spAvoid').value
+  };
+  fetch('/api/scout/profile',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    .then(r=>r.json()).then(j=>{
+      $('spMsg').textContent = t('sp.saveOk');
+      renderConfirmCard(j);
+    })
+    .catch(e=>{ $('spMsg').textContent=t('misc.err')+'：'+e; });
+}
+function renderConfirmCard(j){
+  const zh = LANG==='zh-CN';
+  const u = j.understood || {};
+  const plan = j.search_plan || [];
+  const el = $('spConfirm'); if(!el) return;
+  if(!u.ok){
+    let h = '<div style="border:1px dashed var(--line-strong);padding:14px;background:var(--bg-soft);border-radius:var(--radius)">';
+    h += '<b>'+t('sp.confirm.notunderstood')+'</b>';
+    h += '<p class="mut" style="margin-top:6px">'+t('sp.confirm.notunderstood.sub')+'</p><ul style="margin:6px 0 0 18px">';
+    (u.understood||[]).forEach(x=>{ h += '<li style="font-size:12.5px">'+esc(x)+'</li>'; });
+    h += '</ul><div class="btnrow" style="display:flex;gap:10px;margin-top:12px">';
+    h += '<button class="btn btn-p btn-sm" onclick="runScoutNow()" type="button">'+t('sp.confirm.broad')+'</button>';
+    h += '<button class="btn btn-g btn-sm" onclick="window.scrollTo(0,0)" type="button">'+t('sp.confirm.refine')+'</button>';
+    h += '</div></div>';
+    el.innerHTML = h;
+    return;
+  }
+  let h = '<div style="border:1px solid var(--accent);padding:14px;background:var(--accent-soft);border-radius:var(--radius)">';
+  h += '<b style="color:var(--accent-ink)">✓ '+t('sp.confirm.title')+'</b>';
+  h += '<div class="kv" style="margin-top:10px">';
+  if(u.artist)  h += '<div><b>'+t('sp.confirm.artist')+'</b> '+esc(u.artist)+(u.artist_full&&u.artist_full!==u.artist?'（'+esc(u.artist_full)+'）':'')+'</div>';
+  if(u.series)  h += '<div><b>'+t('sp.confirm.series')+'</b> '+esc(u.series)+'</div>';
+  if(u.maker)   h += '<div><b>'+t('sp.confirm.category')+'</b> '+catLabel(u.category||'CLASSIC_CAR')+'</div>';
+  if(u.model)   h += '<div><b>'+(zh?'车型':'Model')+'</b> '+esc(u.model)+'</div>';
+  if(u.category)h += '<div><b>'+t('sp.confirm.category')+'</b> '+catLabel(u.category)+'</div>';
+  if(u.budget_max) h += '<div><b>'+t('sp.confirm.budget')+'</b> ≤ '+(u.currency||'€')+Number(u.budget_max).toLocaleString()+'</div>';
+  if(u.understood && u.understood.length){
+    h += '<div class="full" style="grid-column:1/-1"><b>'+(zh?'还注意到':'Also noted')+'</b><span class="mut"> '+u.understood.map(esc).join(' · ')+'</span></div>';
+  }
+  h += '<div class="full" style="grid-column:1/-1"><b>'+t('scout.queries')+'</b> '+t('sp.confirm.planned').replace('{n}', plan.length)+'</div>';
+  h += '</div>';
+  h += '<div class="btnrow" style="display:flex;gap:10px;margin-top:12px">';
+  h += '<button class="btn btn-p btn-sm" onclick="runScoutNow()" type="button">'+t('sp.confirm.go')+'</button>';
+  h += '<button class="btn btn-g btn-sm" onclick="window.scrollTo(0,0)" type="button">'+t('sp.confirm.modify')+'</button>';
+  h += '</div></div>';
+  el.innerHTML = h;
+}
+function runScoutNow(){
+  const msg = $('scoutRunMsg');
+  const query = (($('scoutQuery')||{}).value||'').trim();
+  if(!query){
+    if(msg) msg.textContent = LANG==='zh-CN'?'请先输入你要寻找的对象。':'Describe what you want Scout to find.';
+    const q=$('scoutQuery'); if(q) q.focus();
+    return;
+  }
+  const steps = [t('scoutrun.step1'), t('scoutrun.step2'), t('scoutrun.step3'),
+                 t('scoutrun.step4'), t('scoutrun.step5'), t('scoutrun.step6')];
+  let i = 0;
+  const runToken = String(Date.now());
+  const runBtn=$('scoutRunBtn'); if(runBtn) runBtn.disabled=true;
+  window.SCOUT_ABORT = new AbortController();
+  // 网络搜索可能较慢，但不能让界面无限停在 94%。超过 3 分钟明确结束本轮并提示用户。
+  const scoutTimeout = setTimeout(()=>{ if(window.SCOUT_ABORT) window.SCOUT_ABORT.abort(); }, 180000);
+  const cancelBtn=$('scoutCancelBtn'); if(cancelBtn) cancelBtn.style.display='inline-flex';
+  if(msg){
+    msg.dataset.runToken = runToken;
+    msg.innerHTML = '<span style="display:block;font-weight:600">'+t('scoutrun.working')+'</span><span class="progress-track" style="display:block"><span id="scoutProgressBar" class="progress-fill" style="display:block;width:8%"></span></span><span id="scoutProgressCurrent" style="display:block;margin-top:6px"></span>';
+    const iv = setInterval(()=>{
+      if(i < steps.length){ const cur=$('scoutProgressCurrent'); if(cur) cur.textContent=steps[i]; const bar=$('scoutProgressBar'); if(bar) bar.style.width=Math.min(94,8+(i+1)*15)+'%'; i++; }
+      else clearInterval(iv);
+    }, 700); msg._iv = iv;
+  }
+  fetch('/api/scout/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({interests:query}),signal:window.SCOUT_ABORT.signal}).then(async r=>{
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return r.json();
+  }).then(async j=>{
+    if(msg && msg._iv) clearInterval(msg._iv);
+    if(j.status==='PENDING' || j.status==='FAILED'){
+      const bar=$('scoutProgressBar'); if(bar) bar.style.width='100%';
+      if(msg) msg.textContent = (j.status==='FAILED'?t('scoutrun.fail'):t('state.PENDING')) + '：' + (j.error||'');
+      await loadScout();
+      return;
+    }
+    const doneBar=$('scoutProgressBar'); if(doneBar) doneBar.style.width='100%';
+    const current=$('scoutProgressCurrent'); if(current) current.textContent=LANG==='zh-CN'?'今日机会已生成':'Today’s opportunities are ready';
+    await loadScout();
+    if(msg && msg.dataset.runToken===runToken){
+      msg.innerHTML='<span style="display:block;font-weight:700;color:var(--green)">'+(LANG==='zh-CN'?'✓ 巡视完成，今日机会已更新':'✓ Scan complete. Today’s opportunities are updated.')+'</span>';
+      setTimeout(()=>{ if(msg.dataset.runToken===runToken) msg.textContent=''; },900);
+    }
+  }).catch(e=>{
+    const bar=$('scoutProgressBar'); if(bar) bar.style.width='100%';
+    if(msg) msg.textContent = e.name==='AbortError' ? '本轮侦察已超时（180 秒）或已取消，请检查网络后重试。' : t('scoutrun.fail')+'：'+e;
+  }).finally(()=>{clearTimeout(scoutTimeout); if(msg && msg._iv) clearInterval(msg._iv); const cancelBtn=$('scoutCancelBtn');if(cancelBtn)cancelBtn.style.display='none';const runBtn=$('scoutRunBtn');if(runBtn)runBtn.disabled=false;window.SCOUT_ABORT=null;});
+}
+function cancelScoutRun(){
+  if(window.SCOUT_ABORT) window.SCOUT_ABORT.abort();
+  const msg=$('scoutRunMsg'); if(msg) msg.textContent='本轮侦察已取消。';
+  const btn=$('scoutCancelBtn'); if(btn) btn.style.display='none';
+}
+function clearScoutForm(){
+  cancelScoutRun(); const q=$('scoutQuery'); if(q) q.value='';
+  const main=$('scoutMain'); if(main) main.innerHTML='<div class="solid empty"><p class="mut">已清空本页侦察结果，可重新输入对象开始。</p></div>';
+  const msg=$('scoutRunMsg'); if(msg) msg.textContent='';
+}
+function scoutFeedback(cid, fb){
+  fetch('/api/scout/feedback',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({candidate_id:cid, feedback:fb})})
+    .then(r=>r.json()).then(j=>{
+      const el = $('fbMsg'+cid); if(el) el.textContent='✓ '+(fb==='INTERESTED'?t('btn.interest'):fb==='NOT_INTERESTED'?t('btn.notInterest'):fb==='ALREADY_KNOW'?t('btn.alreadyKnow'):t('btn.wrongMatch'));
+    }).catch(e=>{});
+}
+function scoutWhyNot(cid){
+  const zh = LANG==='zh-CN';
+  const opts = zh
+    ? '1 太贵\n2 艺术家/车型不对\n3 年代不对\n4 太普通\n5 来源存疑\n6 不是我的风格\n7 其他'
+    : '1 Too expensive\n2 Wrong artist/model\n3 Wrong period\n4 Too ordinary\n5 Poor provenance\n6 Not my taste\n7 Other';
+  const why = prompt((zh?'为什么这个不匹配？\n\n':'Why not?\n\n')+opts+'\n\n'+(zh?'输入数字或文字：':'Enter a number or text:'));
+  if(why===null) return;
+  fetch('/api/scout/feedback',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({candidate_id:cid, feedback:'WRONG_MATCH', why_not:why})})
+    .then(r=>r.json()).then(j=>{
+      const el = $('fbMsg'+cid); if(el) el.textContent='✓ '+t('btn.wrongMatch');
+    }).catch(e=>{});
+}
+function scoutAnalyze(cid){
+  const local = (ACTIVE_SCOUT && ACTIVE_SCOUT.candidates || []).find(x=>Number(x.id)===Number(cid));
+  const fill = (j)=>{
+    const p = j.prefill||{};
+    gotoPage('analyst');
+    $('artist').value = p.artist||'';
+    $('artwork').value = p.artwork||'';
+    if(p.asking_price) $('price').value = p.asking_price;
+    $('currency').value = p.currency||'EUR';
+    $('category').value = p.category||'ART';
+    $('notes').value = p.notes||'';
+    $('research').checked = true;
+    window.scrollTo(0,0);
+    // Analyst page controls may finish mounting after navigation; defer submit
+    // so the candidate prefill cannot be overwritten by the default Takis form.
+    setTimeout(()=>doAnalyze(), 120);
+  };
+  if(local){
+    fill({prefill:{artist:local.maker||'Land Rover',artwork:local.object||'',asking_price:local.asking_price,currency:local.currency||'EUR',category:local.category||'CLASSIC_CAR',notes:'Scout Candidate #'+cid+': '+(local.source_url||'')}});
+  } else fetch('/api/scout/'+cid+'/analyze').then(r=>r.json()).then(fill).catch(e=>alert(t('misc.err')+'：'+e));
+}
+function scoutWatch(cid){
+  fetch('/api/scout/'+cid+'/watch',{method:'POST'}).then(r=>r.json()).then(j=>{
+    alert('✓ '+t('watch.created')+'（Watch #'+j.watch_id+'）');
+  }).catch(e=>alert(t('misc.err')+'：'+e));
+}
+
+// ================= HISTORY（同一 Design System） =================
+function loadScoutHistory(){
+  fetch('/api/scout/history').then(r=>r.json()).then(j=>{
+    const runs = j.runs||[];
+    let h = '<div class="glass toolbar-card" style="padding:20px;margin-bottom:18px"><div class="h3" style="font-size:14px;letter-spacing:.5px;margin-bottom:14px">'+t('hist.scoutRuns')+'</div>';
+    if(!runs.length){
+      h += '<p class="mut">'+t('hist.scout.empty')+'</p></div>';
+      $('scoutHist').innerHTML = h; return;
+    }
+    h += '<div class="btnrow" style="display:flex;gap:8px;margin-bottom:10px"><button class="btn btn-g btn-sm" type="button" onclick="toggleChecks(\'scoutHist\',true)">全选</button><button class="btn btn-g btn-sm" type="button" onclick="deleteSelectedScoutRuns()">删除选中</button><button class="btn btn-g btn-sm" type="button" onclick="deleteAllScoutRuns()">一键清空</button></div>';
+    h += '<div class="tablewrap"><table><tr><th><input type="checkbox" onchange="toggleChecks(\'scoutHist\',this.checked)"></th><th>'+t('hist.date')+'</th><th>'+t('hist.scout.subject')+'</th><th>'+t('brief.queries')+'</th><th>'+t('brief.records')+'</th><th>'+t('brief.candidates')+'</th><th>'+t('hist.scout.recommended')+'</th><th>'+t('watch.status')+'</th></tr>';
+    runs.forEach(r=>{
+      const date = (r.created_at||'').slice(0,16).replace('T',' ');
+      h += '<tr><td><input type="checkbox" class="scout-hist-check" value="'+r.run_id+'"></td><td class="mut">'+date+'</td><td>'+esc(r.subject)+'</td><td>'+r.queries+'</td><td>'+r.records+'</td><td>'+r.candidates+'</td><td><b>'+r.recommended+'</b></td><td>'+r.status+'</td></tr>';
+    });
+    h += '</table></div></div>';
+    $('scoutHist').innerHTML = h;
+  }).catch(e=>{ console.error('[SCOUT HISTORY] load failed',e); $('scoutHist').innerHTML='<div class="glass toolbar-card"><div class="h3">'+(LANG==='zh-CN'?'巡视记录暂时无法载入':'Scout runs are temporarily unavailable')+'</div><button class="btn btn-p btn-sm" style="margin-top:10px" type="button" onclick="loadScoutHistory()">'+(LANG==='zh-CN'?'重试':'Retry')+'</button></div>'; });
+}
+function loadHistory(){
+  fetch('/api/history').then(r=>{if(!r.ok)throw Error('HTTP '+r.status);return r.json()}).then(j=>{
+    const s = j.stats||{};
+    let h = '<div class="kpi-strip">';
+    const cells = [
+      ['hist.total', s.total_opportunities],
+      ['hist.completed', s.decisions_completed],
+      ['hist.changed', s.decision_changed],
+      ['hist.bought', s.bought],
+      ['hist.passed', s.passed],
+      ['hist.changeRate', s.decision_change_rate!=null ? s.decision_change_rate+'%' : '—'],
+      ['hist.avgDiscount', s.avg_negotiated_discount!=null ? s.avg_negotiated_discount+'%' : '—']
+    ];
+    cells.forEach(([k,v])=>{ h += '<div class="glass kpi-card"><b class="num">'+(v==null?'—':v)+'</b><span>'+t(k)+'</span></div>'; });
+    h += '</div>';
+    $('histStats').innerHTML = h;
+    loadScoutHistory();
+    const rows = j.rows||[];
+    if(!rows.length){ $('histRows').innerHTML = '<p class="mut">'+t('hist.empty')+'</p>'; return; }
+    let tt = '<div class="btnrow" style="display:flex;gap:8px;margin-bottom:10px"><button class="btn btn-g btn-sm" type="button" onclick="toggleChecks(\'histRows\',true)">全选</button><button class="btn btn-g btn-sm" type="button" onclick="deleteSelectedHistory()">删除选中</button><button class="btn btn-g btn-sm" type="button" onclick="deleteAllHistory()">一键清空</button></div><div class="tablewrap"><table class="history-table"><tr><th><input type="checkbox" onchange="toggleChecks(\'histRows\',this.checked)"></th><th>'+t('hist.date')+'</th><th>'+t('hist.object')+'</th><th>'+t('hist.asking')+'</th><th>'+t('hist.analyst')+'</th><th>'+t('hist.final')+'</th><th>'+t('hist.finalPrice')+'</th><th>'+t('hist.changedQ')+'</th><th></th></tr>';
+    rows.forEach(rw=>{
+      const date = (rw.created_at||'').slice(0,10);
+      const asking = rw.asking!=null ? money(rw.asking, rw.currency||'EUR') : '—';
+      const finalPrice = rw.final_transaction_price!=null ? money(rw.final_transaction_price, rw.currency||'EUR') : (rw.final_offer!=null?money(rw.final_offer, rw.currency||'EUR'):'—');
+      tt += '<tr><td><input type="checkbox" class="history-check" value="'+rw.report_id+'"></td><td>'+date+'</td><td>'+esc(rw.object)+'</td><td>'+asking+'</td><td>'+(rw.analyst_decision||'—')+'</td>'
+          +'<td>'+(rw.final_decision||'—')+'</td><td>'+finalPrice+'</td><td>'+(rw.decision_changed||'—')+'</td>'
+          +'<td><a href="#" style="color:var(--accent-ink)" onclick="openReport('+rw.report_id+');return false;">'+t('hist.open')+'</a></td></tr>';
+    });
+    tt += '</table></div>';
+    $('histRows').innerHTML = tt;
+  }).catch(e=>{ console.error('[HISTORY] load failed',e); $('histStats').innerHTML='<div class="kpi-strip"><div class="glass kpi-card"><b>—</b><span>'+(LANG==='zh-CN'?'数据暂不可用':'Temporarily unavailable')+'</span></div></div>'; $('histRows').innerHTML = '<div class="solid empty"><h3>'+(LANG==='zh-CN'?'历史记录暂时无法载入':'History is temporarily unavailable')+'</h3><p class="mut">'+(LANG==='zh-CN'?'已有记录不会丢失，请稍后重试。':'Existing records are safe. Please try again.')+'</p><button class="btn btn-p btn-sm" type="button" onclick="loadHistory()">'+(LANG==='zh-CN'?'重试':'Retry')+'</button></div>'; });
+}
+function toggleChecks(container, checked){ const root=$(container); if(root) root.querySelectorAll('input[type=checkbox]').forEach(c=>c.checked=checked); }
+function selectedValues(sel){ return Array.from(document.querySelectorAll(sel+':checked')).map(c=>c.value); }
+function deleteSelectedScoutRuns(){ const ids=selectedValues('.scout-hist-check'); if(!ids.length)return alert('请先勾选巡视记录'); if(!confirm('删除选中的巡视记录？'))return; fetch('/api/scout/history/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({run_ids:ids})}).then(()=>loadHistory()); }
+function deleteAllScoutRuns(){ if(!confirm('清空全部巡视记录？'))return; const ids=Array.from(document.querySelectorAll('.scout-hist-check')).map(c=>c.value); if(!ids.length)return; fetch('/api/scout/history/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({run_ids:ids})}).then(()=>loadHistory()); }
+function deleteSelectedHistory(){ const ids=selectedValues('.history-check'); if(!ids.length)return alert('请先勾选历史决策'); if(!confirm('删除选中的历史决策？'))return; fetch('/api/history/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({report_ids:ids})}).then(()=>loadHistory()); }
+function deleteAllHistory(){ if(!confirm('清空全部历史决策？'))return; const ids=Array.from(document.querySelectorAll('.history-check')).map(c=>c.value); if(!ids.length)return; fetch('/api/history/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({report_ids:ids})}).then(()=>loadHistory()); }
+function openReport(id){
+  gotoPage('analyst');
+  fetch('/api/reports/'+id).then(r=>r.json()).then(renderReport)
+    .catch(e=>{ $('err').textContent='加载报告失败：'+e; });
+  window.scrollTo(0, 0);
+}
+</script>
+<!-- 截图用：?mobile=1 强制 mobile 渲染（生产安全：仅 query 启用） -->
+<script>
+(function(){
+  try {
+    var p = new URL(location.href).searchParams;
+    if (p.get('mobile')==='1') {
+      var s = document.createElement('style');
+      s.textContent = '.wrap{max-width:430px!important;padding-left:14px!important;padding-right:14px!important} .mk-nav{width:calc(100% - 24px)!important} .page{padding-left:14px!important;padding-right:14px!important} .agentstrip{grid-template-columns:1fr!important} .opp-grid{grid-template-columns:1fr!important} .team-grid{grid-template-columns:1fr!important} .brief-grid{grid-template-columns:1fr!important} .risk-list{grid-template-columns:1fr!important} .brief-nums{grid-template-columns:repeat(2,1fr)!important} .form-grid{grid-template-columns:1fr 1fr!important} .opp-media{height:150px!important}';
+      document.head.appendChild(s);
+    }
+  } catch(e){}
+})();
+</script>
+</body>
+</html>

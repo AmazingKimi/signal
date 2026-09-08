@@ -1,0 +1,11 @@
+/* ================================================================
+ * dark.css — [data-theme="dark"] 组件级覆盖（token 之外的暗色规则）
+ * ================================================================ */
+[data-theme="dark"] .btn-p{background:#f5f5f7;color:#0b0b0e}
+[data-theme="dark"] .mk-navlinks button.on{background:#f5f5f7;color:#0b0b0e;box-shadow:0 2px 10px rgba(0,0,0,.4)}
+[data-theme="dark"] .mk-ctl button.lang-on{background:#f5f5f7;color:#0b0b0e;border-color:#f5f5f7}
+[data-theme="dark"] .opp-card.action{border-top-color:var(--accent)}
+[data-theme="dark"] .opp-card.interest{border-top-color:var(--green)}
+[data-theme="dark"] ::selection{background:rgba(10,132,255,.4)}
+[data-theme="dark"] .score-chip b{color:#f5f5f7}
+[data-theme="dark"] .modal{background:rgba(0,0,0,.55)}
