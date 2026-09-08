@@ -91,6 +91,43 @@ The parser can interpret free-form requests, but the deterministic match gate re
 
 See `NATURAL_LANGUAGE_TARGETS.md`.
 
+## LLM providers: BYOK only
+
+SIGNAL does **not** ship, share, proxy, or subsidize an API key. Every user brings their own provider key locally.
+
+Supported providers:
+
+- DeepSeek
+- OpenAI
+- Anthropic / Claude
+- Google Gemini
+- OpenRouter
+- Ollama local models
+- Custom OpenAI-compatible endpoints
+
+Set the provider in your private `.env`:
+
+```env
+LLM_PROVIDER=deepseek
+LLM_API_KEY=your-own-key
+LLM_MODEL=
+LLM_BASE_URL=
+```
+
+For Ollama, no API key is required:
+
+```env
+LLM_PROVIDER=ollama
+LLM_API_KEY=
+LLM_MODEL=llama3.2
+```
+
+Anthropic and Gemini use their native APIs; DeepSeek, OpenAI, OpenRouter, Ollama, and `custom` use OpenAI-compatible chat transport where applicable.
+
+If no LLM key is configured, SIGNAL still starts and deterministic rule-based behavior remains available.
+
+**Never commit your real `.env` file or API key.** See `.env.example` for provider defaults.
+
 ## Run locally
 
 ### Requirements
@@ -174,7 +211,7 @@ SIGNAL does not automatically contact sellers, generate seller outreach, place b
 
 ## Testing
 
-The project includes automated regression coverage for discovery, matching, lifecycle, provider behavior, source compliance, and change intelligence.
+The project includes automated regression coverage for discovery, matching, lifecycle, provider behavior, source compliance, change intelligence, and BYOK LLM transport adapters.
 
 Historical test counts documented in development notes are preserved as project records; they should not be interpreted as a promise that every environment will reproduce the same count without the same dependencies and provider setup.
 
@@ -185,6 +222,7 @@ Historical test counts documented in development notes are preserved as project 
 - Login-required and manual-only sources are excluded from automatic runs.
 - Coverage reports what the run planned and executed, not the entire market.
 - SIGNAL does not provide valuation, investment advice, purchasing decisions, or seller outreach.
+- Provider model names can change over time; override `LLM_MODEL` locally when needed.
 
 ## Contributing and security
 
