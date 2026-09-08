@@ -61,7 +61,7 @@ Search-result destination pages are not automatically fetched by the SEARCH_ONLY
 
 SIGNAL uses a SEARCH_ONLY architecture. The source registry describes markets the system aims to discover through search; it is **not** a claim that SIGNAL directly crawls every registered site.
 
-The registry currently contains 126 source records with review decisions, evidence, access modes, and health states.
+The registry currently contains **126 sources** with review decisions, evidence, access modes, and health states.
 
 Access behavior is explicit:
 
