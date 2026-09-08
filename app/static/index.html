@@ -1153,8 +1153,7 @@ function renderNextAction(b, c){
 }
 
 function renderReport(r){
-  // 兼容旧报告：历史上曾把合理区间下限乘 0.85，导致 Range Rover 出现 $816。
-  // 展示层先纠正旧数据；新报告由后端使用同一公式生成并会持久化。
+  // 兼容旧报告：展示层先纠正旧数据；新报告由后端使用同一公式生成并会持久化。
   const rb = r && r.brief, rn = r && r.negotiation;
   const ask = Number((r.input||{}).asking_price||0), lo = Number(rb&&rb.fair_range_low||0), hi = Number(rb&&rb.fair_range_high||0);
   if(rb && lo>0 && hi>=lo){
@@ -1578,7 +1577,7 @@ function renderScout(j){
     if(ms.sample_status==='INSUFFICIENT' || ms.sample_status==='PROVISIONAL') h += '<div class="market-warning">'+(ms.method==='CROSS_SOURCE_SOLD_RECORDS_SAME_CURRENCY_3Y'?(zh?'暂定样本：成交价与成交日期已由拍卖方页面核验；当前仅 3 条、2 个来源，建议结合中位数和逐条记录判断。':'Provisional sample: sold prices and dates are verified on auction sources; with 3 lots from 2 sources, use the median and individual records together.'):(zh?'样本仍需核验：均价基于当前可识别的 SOLD 记录，显示样本量与逐条来源；成交日期或汇率缺失时按抓取时间观察。':'Provisional sample: average uses identifiable SOLD records with sample size and source links; missing sale dates or FX are marked as observed time.'))+'</div>';
     if(Number(ms.mean_median_gap_pct||0)>=25) h += '<div class="market-warning">'+(zh?'均价受到高低价差影响较大，请优先结合中位数和逐条成交记录判断。':'The mean is materially affected by dispersion; use the median and individual records together.')+'</div>';
     const methodCopy = ms.method==='CROSS_SOURCE_SOLD_RECORDS_SAME_CURRENCY_3Y'
-      ? (zh?'口径：仅收同代 Range Rover L322 的拍卖方公开 SOLD / Winning bid；排除普通挂牌、估价、价格指南及其他代车型。':'Scope: auction-source SOLD / Winning bid records for the Range Rover L322 generation only; listings, estimates, price guides and other generations are excluded.')
+      ? (zh?'口径：仅收拍卖方公开 SOLD / Winning bid 的同类成交；排除普通挂牌、估价、价格指南及其他版本。':'Scope: auction-source SOLD / Winning bid records of the same family only; listings, estimates, price guides and other variants are excluded.')
       : ms.method==='OBSERVED_SOLD_RECORDS_DOMINANT_CURRENCY_3Y'
         ? (zh?'口径：按搜索结果中标注 SOLD 的记录统计，优先采用同一币种；缺失成交日期时使用抓取时间并明确标注。':'Scope: SOLD-labelled records from this search, using the dominant currency; missing sale dates use observed time and are explicitly marked.')
         : (zh?'口径：只收单灯、开放版、约 195–220 cm 的 Signal；排除双灯、组合装置、独件作品、挂牌价和估价。':'Scope: single-light, open-edition Signals around 195–220 cm only; double signals, installations, unique works, asking prices and estimates are excluded.');

@@ -118,16 +118,6 @@ def _price_intelligence(subject_text, candidates=None):
         })
 
     all_rows = price_records(key)
-    # Older scans stored L322 under several generated keys. Merge them even when
-    # the current key already has a partial sample, otherwise the homepage can
-    # miss sources that the standalone price endpoint correctly sees.
-    if "range rover" in (subject_text or "").lower() and "l322" in (subject_text or "").lower():
-        merged = {r.get("id") or (r.get("source_url"), r.get("price"), r.get("sold_at")): r for r in all_rows}
-        for row in price_records():
-            row_key = str(row.get("subject_key") or "")
-            if "range-rover" in row_key and "l322" in row_key:
-                merged[row.get("id") or (row.get("source_url"), row.get("price"), row.get("sold_at"))] = row
-        all_rows = list(merged.values())
     valid = []
     excluded = {"missing_sale_date": 0, "missing_fx": 0, "unverified_source": 0, "outside_period": 0}
     seen = set()

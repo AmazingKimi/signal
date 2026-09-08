@@ -439,7 +439,7 @@ def analyze(
                 )
 
     # 2b) 人工核验基准兜底（0.8.5）：离线/手动模式且无任何 SOLD 可比时，
-    #     若命中人工逐条核验的拍卖基准（Takis Signal / Range Rover L322），
+    #     若命中人工逐条核验的拍卖基准（Takis Signal），
     #     注入定价池——这是系统已验证的证据，不是推测。
     #     已有 SOLD 可比（无论来自用户输入还是搜索）时绝不覆盖真实证据。
     if not any(c.sale_type == SALE_SOLD for c in comps):
@@ -456,7 +456,7 @@ def analyze(
                     evidence=rec.evidence_excerpt,
                 )
             warnings.append(
-                "已注入人工逐条核验的拍卖成交基准（Takis Signal / Range Rover L322，非搜索获取）"
+                "已注入人工逐条核验的拍卖成交基准（Takis Signal，非搜索获取）"
             )
 
     cur = (inp.currency or "EUR").upper()

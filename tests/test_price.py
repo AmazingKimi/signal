@@ -108,14 +108,3 @@ def test_asking_below_range_is_buy():
     assert report.conclusion == "值得买"
 
 
-def test_l322_benchmark_uses_cross_auction_sold_records_only():
-    """普通汽车挂牌页不得冒充 SOLD；L322 基准必须来自至少两家拍卖方。"""
-    market = _price_intelligence("Range Rover L322")
-    assert market["available"] is True
-    assert market["sample_status"] == "PROVISIONAL"
-    assert market["currency"] == "GBP"
-    assert market["sample_count"] == 3
-    assert market["source_count"] == 2
-    assert market["three_year_average_price"] == 7550
-    assert all("carsforsale.com" not in r["source_url"] for r in market["records"])
-    assert {"www.carandclassic.com", "www.iconicauctioneers.com"} == set(market["source_names"])

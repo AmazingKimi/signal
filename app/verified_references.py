@@ -11,8 +11,7 @@ Rules (inherited from the original implementation):
 - Every record is a real auction lot page with an explicit sold price, a date
   and one price basis. Nothing here is inferred or estimated.
 - Only curated families are present. A family match is conservative:
-  Takis Signal requires artist takis/vassilakis AND artwork signal/lamp;
-  Range Rover L322 requires the text to mention both range rover and l322.
+  Takis Signal requires artist takis/vassilakis AND artwork signal/lamp.
 - These records are SOLD, Tier 1, INCLUDING_PREMIUM. USD lots are converted
   with the sale-date ECB reference rate kept on the record, so the injected
   comparables share the same EUR-normalized basis as /api/prices.
@@ -98,36 +97,6 @@ VERIFIED_MARKET_REFERENCES = [
                 "sold_at": "2026-05-12", "price": 10496, "currency": "EUR",
                 "auction_house": "Piasa", "source_name": "Piasa",
                 "source_url": "https://www.piasa.fr/en/auctions/contemporary-art-abstraction-figuration",
-            },
-        ],
-    },
-    {
-        "key": "range_rover_l322",
-        "subject_key": "generic:range-rover-l322",
-        "scope": "Land Rover Range Rover L322 · 2002–2012 · standard road cars",
-        "currency": "GBP",
-        "price_basis": "拍卖方公开 Winning bid / SOLD 成交价；不含普通挂牌、估价或价格指南",
-        "category": "CLASSIC_CAR",
-        "maker": "Land Rover",
-        "series": "Range Rover L322",
-        "records": [
-            {
-                "title": "2003 Range Rover Vogue 4.4 V8 (L322)",
-                "sold_at": "2026-02-04", "price": 6600, "currency": "GBP",
-                "auction_house": "Car & Classic", "source_name": "Car & Classic",
-                "source_url": "https://www.carandclassic.com/auctions/2003-land-rover-range-rover-vogue-44-v8-n0Q1a4",
-            },
-            {
-                "title": "2008 Range Rover 3.6 TDV8 Vogue (L322)",
-                "sold_at": "2026-01-23", "price": 7050, "currency": "GBP",
-                "auction_house": "Car & Classic", "source_name": "Car & Classic",
-                "source_url": "https://www.carandclassic.com/auctions/2008-land-rover-range-rover-36l-tdv8-vogue-8lz1Nn",
-            },
-            {
-                "title": "2012 Range Rover Westminster (L322)",
-                "sold_at": "2026-03-21", "price": 9000, "currency": "GBP",
-                "auction_house": "Iconic Auctioneers", "source_name": "Iconic Auctioneers",
-                "source_url": "https://www.iconicauctioneers.com/images/saturday-buyitnow-sold-prices-21032026.pdf",
             },
         ],
     },
